@@ -13,6 +13,8 @@
         'Export-TtcHtmlReport'
         'Get-TtcAssessmentScore'
         'New-TtcFindingObject'
+        'Get-TtcFindingSummary'
+        'Invoke-TtcAutoFix'
     )
     CmdletsToExport   = @()
     VariablesToExport  = @()

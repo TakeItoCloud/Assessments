@@ -22,8 +22,8 @@ function Test-TtcPrerequisite {
         'ExchangeOnline'  = @('ExchangeOnlineManagement')
         'HybridIdentity'  = @('Microsoft.Graph.Authentication')
         'EntraID'         = @('Microsoft.Graph.Authentication', 'Microsoft.Graph.Identity.DirectoryManagement', 'Microsoft.Graph.Identity.SignIns')
-        'Defender'        = @('Microsoft.Graph.Authentication', 'Microsoft.Graph.Security')
-        'Collaboration'   = @('Microsoft.Graph.Authentication', 'Microsoft.Graph.Sites')
+        'Defender'        = @('ExchangeOnlineManagement')
+        'Collaboration'   = @('Microsoft.Graph.Authentication')
     }
 
     $required = $prerequisites[$Workload]

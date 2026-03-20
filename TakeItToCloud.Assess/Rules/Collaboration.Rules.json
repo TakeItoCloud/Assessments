@@ -1,6 +1,95 @@
 {
     "RulePackName": "Collaboration",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for SharePoint Online, Teams, and collaboration governance. (Phase 5)",
-    "Rules": []
+    "Version": "2.0.0",
+    "Description": "Assessment rules for SharePoint Online, OneDrive for Business, Microsoft Teams, and collaboration governance — covering external sharing, anonymous links, guest access, sensitivity labels, and retention.",
+    "Rules": [
+        {
+            "RuleId": "COL-SEC-001",
+            "CheckName": "SharePoint and OneDrive External Sharing Level",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Review SharePoint Online external sharing settings",
+            "Description": "Checks the tenant-wide SharePoint and OneDrive external sharing capability. Flags if Anyone (anonymous) sharing is enabled at the tenant level, which allows sharing without authentication."
+        },
+        {
+            "RuleId": "COL-SEC-002",
+            "CheckName": "Anonymous Link Expiration Policy",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Set expiration date for Anyone links",
+            "Description": "Verifies that anonymous (Anyone) sharing links are configured to expire. Without expiration, a shared link provides permanent access to files even after the sharing relationship ends."
+        },
+        {
+            "RuleId": "COL-SEC-003",
+            "CheckName": "External Guest Link Expiration Policy",
+            "Category": "Security",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Set expiration date for external sharing links",
+            "Description": "Checks that external user (guest) sharing links are configured to expire automatically. Without expiration, former collaborators and external guests retain indefinite access to shared content."
+        },
+        {
+            "RuleId": "COL-SEC-004",
+            "CheckName": "Default Sharing Link Scope",
+            "Category": "Security",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Set default sharing link scope to specific people",
+            "Description": "Checks whether the default sharing link scope for SharePoint and OneDrive is set to 'Specific people' rather than 'Anyone' or 'People in your organization'. The default link type affects which sharing option is pre-selected when users share files."
+        },
+        {
+            "RuleId": "COL-GOV-001",
+            "CheckName": "Microsoft 365 Groups Guest Access Policy",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.9",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks the Microsoft 365 Groups directory settings controlling whether guests can be added to groups and whether guests can access group content. Reviews the AllowGuestsToAccessGroups and AllowToAddGuests unified group settings."
+        },
+        {
+            "RuleId": "COL-GOV-002",
+            "CheckName": "Sensitivity Labels Published to Users",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.18",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable Microsoft Purview sensitivity labels",
+            "Description": "Checks whether Microsoft Purview sensitivity labels are published to users via label policies. Labels enable data classification and protection (encryption, access restrictions, watermarks) for files and emails."
+        },
+        {
+            "RuleId": "COL-GOV-003",
+            "CheckName": "Microsoft Purview Retention Policy Coverage",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.18",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "",
+            "Description": "Checks whether Microsoft Purview retention policies are configured to govern data lifecycle across Exchange, SharePoint, Teams, and OneDrive. Requires a Security and Compliance PowerShell session (Connect-IPPSSession)."
+        },
+        {
+            "RuleId": "COL-GOV-004",
+            "CheckName": "Teams External and Guest Access Configuration",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.9",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks Teams organization-level external access (federation with other tenants) and guest access policies. Requires the MicrosoftTeams PowerShell module (Connect-MicrosoftTeams). Returns NotAssessed if module is unavailable."
+        }
+    ]
 }

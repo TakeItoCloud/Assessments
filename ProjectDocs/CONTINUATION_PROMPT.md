@@ -1,74 +1,68 @@
-# How to Continue Development in a New Chat
+# How to Continue Development — Claude in VS Code
 
-## STEP 1: Copy and paste this prompt into a new Claude conversation
-
----
-
-You are continuing development of the **TakeItToCloud.Assess** PowerShell module.
-This is a production-grade Microsoft 365, Hybrid Identity, and Infrastructure assessment framework built for the TakeItToCloud consulting brand.
-
-**READ THE ATTACHED FILES FIRST** — they define the full architecture and current state:
-
-1. **PROJECT_SPEC.md** — Architecture, finding schema, scoring model, naming conventions, folder structure. Follow exactly. Never deviate without updating the spec.
-2. **PHASE_TRACKER.md** — What has been built, what to build next, and key decisions from prior sessions.
-
-**RULES FOR THIS SESSION:**
-
-- Continue with the **current phase** listed in PHASE_TRACKER.md under "Current Phase"
-- Produce **complete, production-ready PowerShell code** — no pseudocode, no placeholders
-- All code must **integrate with existing files** and follow established patterns
-- Use the **finding object schema** from PROJECT_SPEC.md §3 exactly (21 properties, all mandatory, empty string for N/A)
-- Use **`New-TtcFinding`** (Private function) to create all finding objects inside assessors
-- Use **`Write-TtcLog`** for all logging (levels: Info, Warning, Error, Debug)
-- Use **`Get-TtcRulePack`** to load rule metadata from JSON when needed
-- Follow **Verb-TtcNoun** naming convention for all functions
-- Include **comment-based help** on all public functions
-- Include **try/catch error handling** in all assessor functions — errors return Status="Error" findings, never crash the pipeline
-- Each assessor function returns **`[PSCustomObject[]]`** — an array of finding objects
-- At the end of your response, provide the **UPDATED PHASE_TRACKER.md** content reflecting what was completed, so I can save it for the next session
+Since you're using Claude inside VS Code, your project files are already in the workspace. No need to attach anything.
 
 ---
 
-## STEP 2: Attach these files to the message
+## When Starting a New Chat for the Next Phase
 
-**Always attach (minimum):**
-- `ProjectDocs/PROJECT_SPEC.md`
-- `ProjectDocs/PHASE_TRACKER.md`
+Paste this prompt:
 
-**Also attach for context (recommended):**
-- `TakeItToCloud.Assess/TakeItToCloud.Assess.psm1` — module loader
-- `TakeItToCloud.Assess/Private/New-TtcFinding.ps1` — finding factory
-- `TakeItToCloud.Assess/Private/Write-TtcLog.ps1` — logging engine
+```
+You are continuing development of the TakeItToCloud.Assess PowerShell module.
+This is a production-grade Microsoft 365, Hybrid Identity, and Infrastructure assessment framework.
 
-**If the current phase modifies existing files, also attach those files.**
+Before writing any code, read these files from the workspace:
 
----
+1. ProjectDocs/PROJECT_SPEC.md — Architecture, finding schema, scoring model, naming conventions. Follow exactly.
+2. ProjectDocs/PHASE_TRACKER.md — What has been built and what to build next.
+3. TakeItToCloud.Assess/Private/New-TtcFinding.ps1 — Finding factory (use this in all assessors).
+4. TakeItToCloud.Assess/Private/Write-TtcLog.ps1 — Logging engine (use this for all logging).
+5. TakeItToCloud.Assess/TakeItToCloud.Assess.psm1 — Module loader (for integration context).
 
-## STEP 3: After Claude completes the phase
+RULES:
+- Continue with the current phase listed in PHASE_TRACKER.md
+- Produce complete, production-ready PowerShell code — no pseudocode
+- All code must integrate with existing files and follow established patterns
+- Use New-TtcFinding for all finding creation
+- Use Write-TtcLog for all logging
+- Follow Verb-TtcNoun naming convention
+- Include comment-based help on public functions
+- Include try/catch error handling — errors return Status="Error" findings, never crash the pipeline
+- Each assessor returns [PSCustomObject[]] — an array of finding objects
+- At the end, update ProjectDocs/PHASE_TRACKER.md reflecting what was completed
+```
 
-1. Review the code Claude produced
-2. Copy files into your repo at the correct paths
-3. **Save the updated PHASE_TRACKER.md** that Claude provides at the end
-4. Test by running `Demo-TtcAssessment.ps1` or the real assessor
-5. Commit to Git
-6. Repeat from Step 1 for the next phase
-
----
-
-## Quick Reference: What to Attach Per Phase
-
-| Phase | Attach These Extra Files |
-|-------|-------------------------|
-| Phase 3 (AD/Entra/Hybrid assessors) | Rules/AD.Rules.json, Rules/EntraID.Rules.json, Rules/HybridIdentity.Rules.json |
-| Phase 4 (Exchange/Defender) | Rules/ExchangeOnline.Rules.json, Rules/Defender.Rules.json |
-| Phase 5 (Collaboration + extensibility) | Rules/Collaboration.Rules.json, Config/DefaultConfig.json |
+That's it. Claude reads the files from your workspace, knows where you are, and continues building.
 
 ---
 
-## If You Want to Close This Chat Mid-Phase
+## If You Need to Stop Mid-Phase
 
-If Claude is partway through a phase and you need to stop:
+Before closing the chat, just say:
 
-1. Ask Claude: **"Before I close, give me the updated PHASE_TRACKER.md reflecting what was completed and what remains in this phase."**
-2. Save that updated PHASE_TRACKER.md
-3. In the new chat, Claude will see the partial progress and continue from where you left off
+```
+Update ProjectDocs/PHASE_TRACKER.md to reflect what was completed and what remains in this phase.
+```
+
+Claude will edit the file directly in your workspace. Next chat picks up from there.
+
+---
+
+## After Each Phase Is Done
+
+1. Review the code Claude wrote
+2. Test by running Demo-TtcAssessment.ps1 or the real assessor
+3. Go to Source Control (Ctrl+Shift+G) → Stage → Commit → Push
+4. Start a new chat, paste the prompt above, keep building
+
+---
+
+## Quick Reference: Phase Roadmap
+
+| Phase | What Gets Built | Status |
+|-------|----------------|--------|
+| 1+2 | Core engine, scoring, CSV export, HTML report | DONE |
+| 3 | AD + Entra ID + Hybrid Identity assessors (real checks) | NEXT |
+| 4 | Exchange Online + Defender assessors | Backlog |
+| 5 | Collaboration (SPO/Teams) + rule pack extensibility | Backlog |

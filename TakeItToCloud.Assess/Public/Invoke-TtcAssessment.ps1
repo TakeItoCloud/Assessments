@@ -15,6 +15,10 @@ function Invoke-TtcAssessment {
         Valid values: ActiveDirectory, ExchangeOnline, HybridIdentity, EntraID, Defender, Collaboration.
     .PARAMETER ExcludeWorkloads
         Workloads to skip even if listed in Workloads parameter.
+    .PARAMETER ExcludeChecks
+        Array of FindingId values to exclude from the final results and scoring.
+        Example: @('AD-CFG-002', 'ENT-CFG-003') to suppress specific checks.
+        Can also be set in DefaultConfig.json under the ExcludeChecks key.
     .PARAMETER OutputPath
         Directory for report output. Defaults to ./Reports.
     .PARAMETER ReportTitle
@@ -52,6 +56,8 @@ function Invoke-TtcAssessment {
         [string[]]$Workloads,
 
         [string[]]$ExcludeWorkloads = @(),
+
+        [string[]]$ExcludeChecks = @(),
 
         [string]$OutputPath,
 
@@ -230,6 +236,23 @@ function Invoke-TtcAssessment {
         finally {
             $ErrorActionPreference = 'Continue'
         }
+    }
+
+    # --- Apply ExcludeChecks filter ---
+    # Merge parameter value with config value; parameter takes precedence
+    $effectiveExcludes = [System.Collections.Generic.List[string]]::new()
+    if ($ExcludeChecks -and $ExcludeChecks.Count -gt 0) {
+        foreach ($id in $ExcludeChecks) { $effectiveExcludes.Add($id) }
+    }
+    elseif ($config -and $config.ExcludeChecks -and $config.ExcludeChecks.Count -gt 0) {
+        foreach ($id in $config.ExcludeChecks) { $effectiveExcludes.Add($id) }
+    }
+
+    if ($effectiveExcludes.Count -gt 0) {
+        $beforeCount = $allFindings.Count
+        $allFindings = [System.Collections.ArrayList]($allFindings | Where-Object { $_.FindingId -notin $effectiveExcludes })
+        $removed     = $beforeCount - $allFindings.Count
+        Write-TtcLog -Level Info -Message "ExcludeChecks: removed $removed finding(s) matching exclusion list ($($effectiveExcludes -join ', '))"
     }
 
     # --- Calculate scores ---

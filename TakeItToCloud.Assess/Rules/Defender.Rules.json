@@ -1,6 +1,95 @@
 {
     "RulePackName": "Defender",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for Microsoft Defender onboarding, threat protection, and security baselines. (Phase 4)",
-    "Rules": []
+    "Version": "2.0.0",
+    "Description": "Assessment rules for Microsoft Defender for Office 365 safe links, safe attachments, anti-phishing, preset security policies, ZAP configuration, SharePoint/Teams/OneDrive protection, and alert policy coverage.",
+    "Rules": [
+        {
+            "RuleId": "DEF-SEC-001",
+            "CheckName": "Safe Links Policy Coverage",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable Safe Links policies",
+            "Description": "Checks that enabled Safe Links policies exist and cover broad user populations. Safe Links rewrites URLs in email and Office documents to protect against phishing and malicious links. Requires Defender for Office 365 Plan 1 or higher."
+        },
+        {
+            "RuleId": "DEF-SEC-002",
+            "CheckName": "Safe Attachments Policy Coverage",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable Safe Attachments policies",
+            "Description": "Checks that enabled Safe Attachments policies exist with a blocking action (not Off). Safe Attachments detonates suspicious email attachments in a sandbox before delivery. Requires Defender for Office 365 Plan 1 or higher."
+        },
+        {
+            "RuleId": "DEF-SEC-003",
+            "CheckName": "Anti-Phishing Policy Configuration",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Enable anti-phishing policies",
+            "Description": "Checks the default anti-phishing policy for spoof intelligence, mailbox intelligence protection, first contact safety tips, and DMARC honor settings. These baseline controls reduce impersonation and spoofing risk."
+        },
+        {
+            "RuleId": "DEF-CFG-001",
+            "CheckName": "Preset Security Policy Adoption",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-SecureConfig",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Apply standard or strict protection presets",
+            "Description": "Checks whether the Standard or Strict preset security policies are applied in Exchange Online Protection and Defender for Office 365. Preset policies automatically apply Microsoft-recommended configurations and stay current with threat intelligence."
+        },
+        {
+            "RuleId": "DEF-CFG-002",
+            "CheckName": "Zero-Hour Auto Purge Configuration",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable ZAP for spam and phishing",
+            "Description": "Verifies that Zero-Hour Auto Purge (ZAP) is enabled for both spam (HostedContentFilterPolicy.ZapEnabled) and phishing (AntiPhishPolicy.PhishZapEnabled). ZAP retroactively removes malicious messages detected after delivery."
+        },
+        {
+            "RuleId": "DEF-CFG-003",
+            "CheckName": "Defender for Office 365 SharePoint Teams OneDrive Protection",
+            "Category": "Configuration",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Turn on Defender for Office 365 for SharePoint, OneDrive, and Microsoft Teams",
+            "Description": "Checks that Safe Attachments protection is enabled for SharePoint Online, Teams, and OneDrive for Business (EnableATPForSPOTeamsODB = true) to detect and block malware in file collaboration services."
+        },
+        {
+            "RuleId": "DEF-MON-001",
+            "CheckName": "High-Severity Alert Policy Notification",
+            "Category": "Monitoring",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Checks that enabled high-severity default alert policies have email notification recipients configured. Without notifications, critical security events (compromised accounts, mass downloads) go unnoticed until manually discovered."
+        },
+        {
+            "RuleId": "DEF-MON-002",
+            "CheckName": "Compromised Account Alert Policies",
+            "Category": "Monitoring",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Verifies that key Microsoft default alert policies for compromised user indicators (suspicious sending patterns, forwarding rules created) are enabled and have notification recipients configured."
+        }
+    ]
 }

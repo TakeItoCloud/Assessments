@@ -1,6 +1,117 @@
 {
     "RulePackName": "ExchangeOnline",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for Exchange Online mail flow, connectors, and security posture. (Phase 4)",
-    "Rules": []
+    "Version": "2.0.0",
+    "Description": "Assessment rules for Exchange Online mail security, authentication, anti-malware, email authentication records, connector security, admin role hygiene, and audit logging.",
+    "Rules": [
+        {
+            "RuleId": "EXO-SEC-001",
+            "CheckName": "Modern Authentication Status",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Enable modern authentication for Exchange Online",
+            "Description": "Checks that OAuth2 modern authentication is enabled so that MFA and Conditional Access policies apply to Outlook and other mail clients. Without this, Basic auth bypasses all MFA controls."
+        },
+        {
+            "RuleId": "EXO-SEC-002",
+            "CheckName": "Anti-Malware Policy Configuration",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable anti-malware policies",
+            "Description": "Verifies that the Exchange Online anti-malware filter policy has file type filtering and Zero-Hour Auto Purge (ZAP) enabled, with admin notification configured for detected malware."
+        },
+        {
+            "RuleId": "EXO-SEC-003",
+            "CheckName": "DKIM Signing Configuration",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Enable DKIM signatures for your domain",
+            "Description": "Checks that DKIM signing is enabled for all custom accepted domains. DKIM cryptographically signs outbound email, preventing spoofing and enabling strong DMARC enforcement."
+        },
+        {
+            "RuleId": "EXO-CFG-001",
+            "CheckName": "SPF and DMARC Record Configuration",
+            "Category": "Configuration",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Set up DMARC for your email domains",
+            "Description": "Performs DNS checks to verify SPF TXT records include Exchange Online mail servers and DMARC records exist at _dmarc.{domain} for all custom accepted domains. Flags DMARC p=none as a warning."
+        },
+        {
+            "RuleId": "EXO-CFG-002",
+            "CheckName": "Automatic External Email Forwarding",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "Do not allow email forwarding to external domains",
+            "Description": "Checks the outbound spam filter AutoForwardingMode setting. Should be Off to prevent compromised mailboxes from silently forwarding email externally — a primary BEC exfiltration technique."
+        },
+        {
+            "RuleId": "EXO-CFG-003",
+            "CheckName": "Connector TLS Enforcement",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Networks",
+            "SecureScoreMapping": "",
+            "Description": "Checks that partner outbound connectors enforce TLS (TlsSettings != None) and partner inbound connectors require TLS (RequireTls = true) to encrypt email in transit with partner organizations."
+        },
+        {
+            "RuleId": "EXO-CFG-004",
+            "CheckName": "Anti-Spam Outbound Notification",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Verifies that the outbound spam filter policy is configured to notify administrators when an account exceeds spam thresholds, providing early warning of credential compromise."
+        },
+        {
+            "RuleId": "EXO-GOV-001",
+            "CheckName": "Exchange Admin Role Hygiene",
+            "Category": "Governance",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Reduce Exchange admin role membership",
+            "Description": "Checks the number of members in the Organization Management role group. Excessive membership increases the attack surface and the risk of mail flow misconfiguration or data exfiltration."
+        },
+        {
+            "RuleId": "EXO-MON-001",
+            "CheckName": "Mailbox Audit Logging",
+            "Category": "Monitoring",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-ContinuousMonitoring",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "",
+            "Description": "Checks that organization-level mailbox audit logging is enabled (AuditDisabled = false). Microsoft enables this by default since 2019 but it can be manually disabled, removing the forensic trail for mailbox access."
+        },
+        {
+            "RuleId": "EXO-MON-002",
+            "CheckName": "Unified Audit Log Status",
+            "Category": "Monitoring",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-ContinuousMonitoring",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "Turn on audit data recording",
+            "Description": "Verifies that Unified Audit Log ingestion is enabled (UnifiedAuditLogIngestionEnabled = true), providing a centralized record of user and admin activity across Microsoft 365 services."
+        }
+    ]
 }

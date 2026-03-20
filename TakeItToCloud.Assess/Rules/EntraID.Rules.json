@@ -1,76 +1,76 @@
 {
     "RulePackName": "EntraID",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for Microsoft Entra ID identity security, Conditional Access, and governance.",
+    "Version": "2.0.0",
+    "Description": "Assessment rules for Microsoft Entra ID identity security, Conditional Access, governance, and monitoring.",
     "Rules": [
         {
             "RuleId": "ENT-SEC-001",
-            "CheckName": "MFA Posture for All Users",
+            "CheckName": "MFA Registration Coverage",
             "Category": "Security",
             "DefaultSeverity": "Critical",
             "Enabled": true,
             "FrameworkMapping": "NIST-Protect",
             "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "MFA registration",
-            "Description": "Checks that MFA is enforced or registered for all users"
+            "SecureScoreMapping": "Require MFA for all users",
+            "Description": "Checks MFA registration coverage across member users using the authentication methods registration report or per-user method query"
         },
         {
             "RuleId": "ENT-SEC-002",
-            "CheckName": "Conditional Access Policy Coverage",
-            "Category": "Security",
-            "DefaultSeverity": "High",
-            "Enabled": true,
-            "FrameworkMapping": "NIST-Protect",
-            "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "Conditional Access policies",
-            "Description": "Evaluates Conditional Access policy coverage and identifies gaps"
-        },
-        {
-            "RuleId": "ENT-IDN-001",
-            "CheckName": "Global Admin Role Assignment Hygiene",
-            "Category": "Identity",
-            "DefaultSeverity": "Critical",
-            "Enabled": true,
-            "FrameworkMapping": "CIS-AccessControl",
-            "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "Admin roles",
-            "Description": "Reviews the number and configuration of Global Administrator assignments"
-        },
-        {
-            "RuleId": "ENT-SEC-003",
-            "CheckName": "Legacy Authentication Exposure",
+            "CheckName": "Legacy Authentication Blocked",
             "Category": "Security",
             "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "CIS-SecureConfig",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "Block legacy authentication",
-            "Description": "Checks whether legacy authentication protocols are blocked"
+            "Description": "Verifies that an enabled Conditional Access policy blocks legacy authentication protocols (Exchange ActiveSync, Other clients)"
+        },
+        {
+            "RuleId": "ENT-SEC-003",
+            "CheckName": "Global Administrator Count",
+            "Category": "Identity",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Ensure there are at most 5 global admins",
+            "Description": "Checks that the number of permanent Global Administrator assignments is between 2 and the configurable maximum (default 5)"
         },
         {
             "RuleId": "ENT-SEC-004",
-            "CheckName": "Risky User Monitoring",
+            "CheckName": "Risky Users Not Remediated",
             "Category": "Security",
             "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "NIST-Detect",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Checks for unresolved risky user detections in Identity Protection"
+            "Description": "Identifies user accounts flagged as 'atRisk' or 'confirmedCompromised' in Entra Identity Protection that have not been remediated (requires P2 license)"
         },
         {
-            "RuleId": "ENT-GOV-001",
-            "CheckName": "Application Consent Risk",
+            "RuleId": "ENT-SEC-005",
+            "CheckName": "Conditional Access Baseline Coverage",
+            "Category": "Security",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Enable Conditional Access policies",
+            "Description": "Verifies that Conditional Access policies are enabled. Flags if no CA policies are active and Security Defaults is also disabled"
+        },
+        {
+            "RuleId": "ENT-CFG-001",
+            "CheckName": "User Application Consent Policy",
             "Category": "Governance",
-            "DefaultSeverity": "Medium",
+            "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "ISO27001-A.9",
             "ZeroTrustPillar": "Applications",
-            "SecureScoreMapping": "App consent policies",
-            "Description": "Reviews application consent settings and identifies overly permissive configurations"
+            "SecureScoreMapping": "Do not allow users to grant consent to unmanaged applications",
+            "Description": "Checks whether unrestricted user consent to OAuth applications is enabled (legacy consent policy), exposing the tenant to consent phishing"
         },
         {
-            "RuleId": "ENT-GOV-002",
+            "RuleId": "ENT-CFG-002",
             "CheckName": "External Collaboration Settings",
             "Category": "Governance",
             "DefaultSeverity": "Medium",
@@ -78,18 +78,40 @@
             "FrameworkMapping": "ISO27001-A.9",
             "ZeroTrustPillar": "Data",
             "SecureScoreMapping": "",
-            "Description": "Evaluates guest invitation and external sharing policies"
+            "Description": "Reviews guest invitation settings to ensure only administrators and designated Guest Inviters can invite external users"
+        },
+        {
+            "RuleId": "ENT-CFG-003",
+            "CheckName": "Self-Service Password Reset Configuration",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks whether Self-Service Password Reset (SSPR) is enabled to reduce helpdesk load and social engineering risk from manual resets"
+        },
+        {
+            "RuleId": "ENT-IDN-001",
+            "CheckName": "Stale Guest User Accounts",
+            "Category": "Identity",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Identifies enabled guest accounts that have not signed in within the configurable threshold (default 90 days)"
         },
         {
             "RuleId": "ENT-MON-001",
-            "CheckName": "Audit Log Coverage",
+            "CheckName": "Entra ID Audit and Sign-in Log Accessibility",
             "Category": "Monitoring",
             "DefaultSeverity": "Medium",
             "Enabled": true,
             "FrameworkMapping": "CIS-ContinuousMonitoring",
             "ZeroTrustPillar": "Infrastructure",
             "SecureScoreMapping": "Audit logging",
-            "Description": "Verifies that unified audit logging is enabled and operational"
+            "Description": "Verifies that audit logs and sign-in logs are accessible and current, confirming log pipeline health"
         }
     ]
 }

@@ -1,7 +1,7 @@
 {
     "RulePackName": "ActiveDirectory",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for on-premises Active Directory health, security, and configuration.",
+    "Version": "2.0.0",
+    "Description": "Assessment rules for on-premises Active Directory health, security, resilience, and monitoring.",
     "Rules": [
         {
             "RuleId": "AD-HLT-001",
@@ -12,29 +12,40 @@
             "FrameworkMapping": "NIST-Detect",
             "ZeroTrustPillar": "Infrastructure",
             "SecureScoreMapping": "",
-            "Description": "Checks for AD replication failures between domain controllers"
+            "Description": "Checks for AD replication failures between domain controllers using Get-ADReplicationFailure"
         },
         {
             "RuleId": "AD-HLT-002",
-            "CheckName": "DNS Health Dependencies",
-            "Category": "Health",
-            "DefaultSeverity": "High",
+            "CheckName": "Domain Controller Redundancy",
+            "Category": "Resilience",
+            "DefaultSeverity": "Critical",
             "Enabled": true,
-            "FrameworkMapping": "NIST-Identify",
+            "FrameworkMapping": "NIST-Recover",
             "ZeroTrustPillar": "Infrastructure",
             "SecureScoreMapping": "",
-            "Description": "Validates DNS infrastructure supporting Active Directory"
+            "Description": "Verifies a minimum of two domain controllers exist to prevent single points of failure"
         },
         {
             "RuleId": "AD-HLT-003",
-            "CheckName": "FSMO Role Visibility",
+            "CheckName": "Domain Controller OS Version",
             "Category": "Health",
-            "DefaultSeverity": "Medium",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-SecureConfig",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Flags domain controllers running end-of-life Windows Server versions (2012 R2 or earlier)"
+        },
+        {
+            "RuleId": "AD-HLT-004",
+            "CheckName": "FSMO Role Holder Accessibility",
+            "Category": "Health",
+            "DefaultSeverity": "Critical",
             "Enabled": true,
             "FrameworkMapping": "NIST-Identify",
             "ZeroTrustPillar": "Infrastructure",
             "SecureScoreMapping": "",
-            "Description": "Verifies all FSMO role holders are reachable and responsive"
+            "Description": "Verifies all five FSMO role holders are reachable on LDAP port 389"
         },
         {
             "RuleId": "AD-SEC-001",
@@ -44,52 +55,85 @@
             "Enabled": true,
             "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "",
-            "Description": "Checks for accounts in privileged groups that have not logged in recently"
+            "SecureScoreMapping": "Remove inactive accounts",
+            "Description": "Identifies accounts in Domain Admins, Enterprise Admins, and other privileged groups with no recent logon or disabled accounts"
         },
         {
             "RuleId": "AD-SEC-002",
-            "CheckName": "Inactive Admin Accounts",
+            "CheckName": "Default Administrator Account Hygiene",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks that the built-in Administrator account (RID-500) is renamed and disabled"
+        },
+        {
+            "RuleId": "AD-SEC-003",
+            "CheckName": "Unconstrained Kerberos Delegation",
             "Category": "Security",
             "DefaultSeverity": "Critical",
             "Enabled": true,
             "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Identifies admin accounts with no recent logon activity"
+            "Description": "Identifies non-DC computers and user accounts configured with unconstrained Kerberos delegation"
         },
         {
-            "RuleId": "AD-SEC-003",
-            "CheckName": "Password Policy Weaknesses",
+            "RuleId": "AD-SEC-004",
+            "CheckName": "Krbtgt Account Password Age",
             "Category": "Security",
             "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "NIST-Protect",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Evaluates domain password policy against security best practices"
+            "Description": "Checks the age of the krbtgt account password against a configurable threshold (default 180 days)"
         },
         {
-            "RuleId": "AD-SEC-004",
-            "CheckName": "Delegation Configuration Issues",
+            "RuleId": "AD-SEC-005",
+            "CheckName": "Protected Users Security Group Coverage",
             "Category": "Security",
             "DefaultSeverity": "Medium",
             "Enabled": true,
             "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Reviews unconstrained and dangerous delegation settings"
+            "Description": "Checks that privileged users (Domain/Enterprise/Schema Admins) are members of the Protected Users security group"
+        },
+        {
+            "RuleId": "AD-CFG-001",
+            "CheckName": "Default Domain Password Policy",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Evaluates the default domain password policy against security baselines: minimum length, complexity, lockout, history, reversible encryption"
+        },
+        {
+            "RuleId": "AD-CFG-002",
+            "CheckName": "Fine-Grained Password Policies",
+            "Category": "Configuration",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks whether Fine-Grained Password Policies exist for applying stricter requirements to privileged accounts"
         },
         {
             "RuleId": "AD-MON-001",
-            "CheckName": "Audit Policy Gaps",
+            "CheckName": "Advanced Audit Policy Configuration",
             "Category": "Monitoring",
             "DefaultSeverity": "Medium",
             "Enabled": true,
             "FrameworkMapping": "NIST-Detect",
             "ZeroTrustPillar": "Infrastructure",
             "SecureScoreMapping": "",
-            "Description": "Checks that critical audit policies are configured for security monitoring"
+            "Description": "Checks that critical audit policy subcategories (logon, account management, directory service access, privilege use) are configured on the local system via auditpol"
         }
     ]
 }

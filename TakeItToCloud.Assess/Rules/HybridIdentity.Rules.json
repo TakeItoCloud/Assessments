@@ -1,95 +1,95 @@
 {
     "RulePackName": "HybridIdentity",
-    "Version": "1.0.0",
-    "Description": "Assessment rules for Hybrid Identity configurations including Entra Connect, sync, and federation.",
+    "Version": "2.0.0",
+    "Description": "Assessment rules for Microsoft Entra Connect hybrid identity configuration, sync health, authentication mode, and privileged account hygiene.",
     "Rules": [
         {
             "RuleId": "HYB-HLT-001",
-            "CheckName": "Entra Connect Sync Health",
+            "CheckName": "Directory Sync Status",
             "Category": "Health",
-            "DefaultSeverity": "Critical",
+            "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "NIST-Identify",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Validates Entra Connect sync status and last sync time"
+            "Description": "Checks the age of the last Entra Connect directory synchronization against a configurable threshold (default 60 minutes)"
         },
         {
             "RuleId": "HYB-HLT-002",
-            "CheckName": "Sync Error Detection",
+            "CheckName": "Password Hash Sync Currency",
             "Category": "Health",
-            "DefaultSeverity": "High",
+            "DefaultSeverity": "Medium",
             "Enabled": true,
-            "FrameworkMapping": "NIST-Detect",
+            "FrameworkMapping": "NIST-Protect",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Checks for synchronization errors between on-premises AD and Entra ID"
+            "Description": "Checks the age of the last password hash synchronization to detect PHS pipeline issues"
         },
         {
-            "RuleId": "HYB-SEC-001",
-            "CheckName": "Certificate Expiry Check",
-            "Category": "Security",
+            "RuleId": "HYB-HLT-003",
+            "Category": "Health",
+            "CheckName": "Directory Synchronization Errors",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Identify",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Identifies user and group objects with OnPremisesProvisioningErrors indicating failed synchronization"
+        },
+        {
+            "RuleId": "HYB-CFG-001",
+            "CheckName": "Password Hash Sync Configuration",
+            "Category": "Configuration",
             "DefaultSeverity": "High",
             "Enabled": true,
             "FrameworkMapping": "NIST-Protect",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Checks for certificates nearing or past expiry in hybrid identity components"
+            "Description": "Verifies that Password Hash Synchronization is enabled to provide authentication resilience and leaked credential detection, even in PTA or Federated environments"
         },
         {
-            "RuleId": "HYB-SEC-002",
-            "CheckName": "Password Hash Sync / PTA / Federation Posture",
-            "Category": "Security",
+            "RuleId": "HYB-CFG-002",
+            "CheckName": "Authentication Mode Assessment",
+            "Category": "Configuration",
             "DefaultSeverity": "Medium",
             "Enabled": true,
-            "FrameworkMapping": "CIS-SecureConfig",
+            "FrameworkMapping": "NIST-Protect",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Evaluates the authentication method configuration for hybrid identity"
+            "Description": "Identifies the active authentication method (PHS/PTA/Federation) and flags ADFS-based federation for migration consideration"
         },
         {
-            "RuleId": "HYB-SEC-003",
-            "CheckName": "Break-Glass Account Protection",
-            "Category": "Security",
+            "RuleId": "HYB-CFG-003",
+            "CheckName": "Entra Connect Service Account Privileges",
+            "Category": "Configuration",
             "DefaultSeverity": "Critical",
             "Enabled": true,
             "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
             "SecureScoreMapping": "",
-            "Description": "Validates break-glass emergency access account configuration"
+            "Description": "Checks that the MSOL_ Entra Connect service account is not a member of privileged AD groups such as Domain Admins or Administrators"
         },
         {
-            "RuleId": "HYB-IDN-001",
-            "CheckName": "MFA Gaps for Privileged Accounts",
-            "Category": "Identity",
-            "DefaultSeverity": "Critical",
-            "Enabled": true,
-            "FrameworkMapping": "NIST-Protect",
-            "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "MFA for admins",
-            "Description": "Identifies privileged accounts without MFA enforcement"
-        },
-        {
-            "RuleId": "HYB-SEC-004",
-            "CheckName": "Conditional Access Coverage for Hybrid",
+            "RuleId": "HYB-SEC-001",
+            "CheckName": "On-Premises Admin Accounts Synced to Cloud",
             "Category": "Security",
             "DefaultSeverity": "High",
             "Enabled": true,
-            "FrameworkMapping": "NIST-Protect",
+            "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "Conditional Access policies",
-            "Description": "Checks Conditional Access coverage for hybrid authentication scenarios"
+            "SecureScoreMapping": "Ensure admin accounts are cloud-only",
+            "Description": "Identifies on-premises Domain Admin accounts that are synchronized to Entra ID, violating the cloud/on-prem tier separation principle"
         },
         {
-            "RuleId": "HYB-SEC-005",
-            "CheckName": "Legacy Authentication Exposure in Hybrid",
+            "RuleId": "HYB-SEC-002",
+            "CheckName": "Break-Glass Accounts Are Cloud-Only",
             "Category": "Security",
             "DefaultSeverity": "High",
             "Enabled": true,
-            "FrameworkMapping": "CIS-SecureConfig",
+            "FrameworkMapping": "CIS-AccessControl",
             "ZeroTrustPillar": "Identity",
-            "SecureScoreMapping": "Block legacy authentication",
-            "Description": "Checks if legacy auth protocols can bypass Conditional Access in hybrid environments"
+            "SecureScoreMapping": "",
+            "Description": "Verifies that Global Administrator break-glass accounts are cloud-only and not synchronized from on-premises AD, ensuring tenant access survives on-premises compromise"
         }
     ]
 }

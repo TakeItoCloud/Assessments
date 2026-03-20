@@ -1,0 +1,695 @@
+================================================================================
+  TAKEITTTOCLOUD.ASSESS — HOW TO USE THE TOOL
+  TakeItToCloud Consulting | Production Assessment Framework
+================================================================================
+
+CONTENTS
+--------
+  1. Prerequisites & Installation
+  2. Loading the Module
+  3. Running a Full Assessment (All Workloads)
+  4. Running Individual Assessors
+       4a. Active Directory
+       4b. Entra ID (Azure AD)
+       4c. Hybrid Identity (Entra Connect / AD Connect)
+       4d. Exchange Online
+       4e. Defender for Office 365
+       4f. Collaboration (SharePoint, OneDrive, Teams, Purview)
+  5. Selective Workloads and Exclusions
+  6. Reading the Results
+  7. Console Summary (Get-TtcFindingSummary)
+  8. Generating a Remediation Script (Invoke-TtcAutoFix)
+  9. Reports — CSV and HTML
+  10. Configuration File (DefaultConfig.json)
+  11. Finding Status Reference
+  12. Quick Reference Card
+
+
+================================================================================
+  1. PREREQUISITES & INSTALLATION
+================================================================================
+
+PowerShell Version
+  - Minimum: PowerShell 5.1 (Windows PowerShell)
+  - Recommended: PowerShell 7.x for better performance
+
+Required Modules — install once per machine
+  Install-Module Microsoft.Graph.Authentication        -Scope CurrentUser -Force
+  Install-Module Microsoft.Graph.Identity.DirectoryManagement -Scope CurrentUser -Force
+  Install-Module Microsoft.Graph.Identity.SignIns      -Scope CurrentUser -Force
+  Install-Module ExchangeOnlineManagement              -Scope CurrentUser -Force
+
+Optional Modules — only needed for specific workloads
+  Install-Module MicrosoftTeams          -Scope CurrentUser -Force   # Teams checks
+  Install-Module Microsoft.Online.SharePoint.PowerShell -Scope CurrentUser -Force  # SPO fallback
+
+  # Active Directory module — included with Windows Server RSAT
+  # Run as Administrator on a domain-joined Windows machine:
+  Add-WindowsCapability -Online -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
+
+
+================================================================================
+  2. LOADING THE MODULE
+================================================================================
+
+  Import-Module C:\Scripts\Assessment\Assessments\TakeItToCloud.Assess\TakeItToCloud.Assess.psd1
+
+  # Verify it loaded correctly — should list all exported functions
+  Get-Command -Module TakeItToCloud.Assess
+
+  Exported functions:
+    Invoke-TtcAssessment       — Main orchestrator (all workloads)
+    Get-TtcAssessmentScore     — Scoring engine
+    Export-TtcCsvReport        — CSV export
+    Export-TtcHtmlReport       — HTML report
+    Get-TtcFindingSummary      — Quick console summary
+    Invoke-TtcAutoFix          — Remediation script generator
+    New-TtcFindingObject       — Public finding constructor
+
+
+================================================================================
+  3. RUNNING A FULL ASSESSMENT (ALL WORKLOADS)
+================================================================================
+
+Step 1 — Connect to all required services
+
+  Connect-MgGraph -Scopes @(
+      'Directory.Read.All',
+      'AuditLog.Read.All',
+      'Policy.Read.All',
+      'Reports.Read.All',
+      'IdentityRiskyUser.Read.All',
+      'SharePointTenantSettings.Read.All'
+  )
+
+  Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+
+  # Optional — for Teams checks
+  Connect-MicrosoftTeams
+
+  # Optional — for Purview retention checks
+  Connect-IPPSSession -UserPrincipalName admin@contoso.com
+
+  # Optional — for SharePoint fallback (if Graph SPO scope not consented)
+  Connect-SPOService -Url https://contoso-admin.sharepoint.com
+
+Step 2 — Run the assessment
+
+  $result = Invoke-TtcAssessment `
+      -CustomerName 'Contoso Ltd' `
+      -AssessedBy   'Carlos' `
+      -OutputPath   'C:\Reports\Contoso'
+
+  Reports are written automatically to OutputPath. Filenames include a timestamp:
+    TtcAssessment_20260320_143022.csv
+    TtcAssessment_20260320_143022.html
+
+Step 3 — Review the results
+
+  # Quick console summary
+  Get-TtcFindingSummary -Findings $result.Findings -Scores $result.Scores -CustomerName 'Contoso'
+
+  # Open HTML report
+  Start-Process $result.HtmlReport
+
+Step 4 — Generate a remediation script
+
+  Invoke-TtcAutoFix -Findings $result.Findings -OutputPath 'C:\Reports\Contoso\Remediation.ps1'
+
+  !! IMPORTANT: Review the generated script BEFORE executing it.
+     Nothing is changed automatically. The script requires manual review and execution.
+
+
+================================================================================
+  4a. ACTIVE DIRECTORY ASSESSOR
+================================================================================
+
+Checks (12 total):
+  AD-HLT-001  Domain Controller Replication Health         High
+  AD-HLT-002  Domain Controller Redundancy                 Critical
+  AD-HLT-003  Domain Controller OS Version                 High
+  AD-HLT-004  FSMO Role Holder Accessibility               Critical
+  AD-SEC-001  Stale Privileged Group Members               High/Critical
+  AD-SEC-002  Default Administrator Account Hygiene        High
+  AD-SEC-003  Unconstrained Kerberos Delegation            Critical
+  AD-SEC-004  Krbtgt Account Password Age                  High/Critical
+  AD-SEC-005  Protected Users Security Group Coverage      Medium
+  AD-CFG-001  Default Domain Password Policy               Medium/High
+  AD-CFG-002  Fine-Grained Password Policies               Medium
+  AD-MON-001  Advanced Audit Policy Configuration          Medium
+
+Prerequisites:
+  - Run from a domain-joined Windows machine
+  - ActiveDirectory PowerShell module (RSAT) must be installed
+  - User account must have read access to Active Directory
+
+Usage:
+  # Import ActiveDirectory module (usually auto-loaded on domain controllers)
+  Import-Module ActiveDirectory
+
+  # Run the assessor
+  $adFindings = Invoke-TtcAdAssessment
+
+  # Review findings
+  $adFindings | Get-TtcFindingSummary
+
+  # Generate remediation script
+  $adFindings | Invoke-TtcAutoFix -OutputPath 'C:\Reports\AD_Remediation.ps1'
+
+  # See only failures
+  $adFindings | Where-Object { $_.Status -eq 'Fail' } | Select-Object FindingId, Severity, CheckName, IssueDetected
+
+Notes:
+  - Krbtgt and RID-500 administrator are identified by SID — rename-resilient
+  - FSMO accessibility uses TCP port 389 test, not ICMP ping
+  - Run as a Domain Admin or with delegated read access to all domain objects
+
+
+================================================================================
+  4b. ENTRA ID ASSESSOR
+================================================================================
+
+Checks (10 total):
+  ENT-SEC-001  MFA Registration Coverage                   Critical/High
+  ENT-SEC-002  Legacy Authentication Blocked               High
+  ENT-SEC-003  Global Administrator Count                  Critical/High
+  ENT-SEC-004  Risky Users Not Remediated                  Critical/High
+  ENT-SEC-005  Conditional Access Baseline Coverage        Critical/Medium
+  ENT-CFG-001  User Application Consent Policy             High
+  ENT-CFG-002  External Collaboration Settings             High/Medium
+  ENT-CFG-003  Self-Service Password Reset Configuration   Medium
+  ENT-IDN-001  Stale Guest User Accounts                   High/Medium
+  ENT-MON-001  Entra ID Audit and Sign-in Log Accessibility Medium
+
+Prerequisites:
+  - Microsoft.Graph.Authentication module
+  - Microsoft.Graph.Identity.DirectoryManagement module
+  - Microsoft.Graph.Identity.SignIns module
+  - Global Reader role or equivalent read permissions in Entra ID
+
+Required Graph Scopes:
+  Directory.Read.All
+  AuditLog.Read.All
+  Policy.Read.All
+  Reports.Read.All
+  IdentityRiskyUser.Read.All
+
+Usage:
+  Connect-MgGraph -Scopes @(
+      'Directory.Read.All',
+      'AuditLog.Read.All',
+      'Policy.Read.All',
+      'Reports.Read.All',
+      'IdentityRiskyUser.Read.All'
+  )
+
+  $entraFindings = Invoke-TtcEntraAssessment
+  $entraFindings | Get-TtcFindingSummary -CustomerName 'Contoso'
+
+Notes:
+  - MFA check: primary path uses reporting API; falls back to per-user method query
+    (50-user sample) if the Reports.Read.All scope is not consented
+  - Conditional Access check flags missing policies for MFA, legacy auth, and
+    sign-in risk — does not require specific named policies
+  - Risky users check requires IdentityRiskyUser.Read.All (requires P2 license data)
+
+
+================================================================================
+  4c. HYBRID IDENTITY ASSESSOR (ENTRA CONNECT / AD CONNECT)
+================================================================================
+
+Checks (8 total):
+  HYB-HLT-001  Directory Sync Status                       High/Critical
+  HYB-HLT-002  Password Hash Sync Currency                 Medium/High
+  HYB-HLT-003  Directory Synchronization Errors            Medium
+  HYB-CFG-001  Password Hash Sync Configuration            High
+  HYB-CFG-002  Authentication Mode Assessment              Medium
+  HYB-CFG-003  Entra Connect Service Account Privileges    Critical/Medium
+  HYB-SEC-001  On-Premises Admin Accounts Synced to Cloud  High
+  HYB-SEC-002  Break-Glass Accounts Are Cloud-Only         High
+
+Prerequisites:
+  - Microsoft.Graph.Authentication (cloud-side checks)
+  - ActiveDirectory module is optional but enables on-prem checks
+
+Usage — Cloud-side only (no domain access required):
+  Connect-MgGraph -Scopes 'Directory.Read.All', 'AuditLog.Read.All'
+  $hybFindings = Invoke-TtcHybridAssessment
+
+Usage — Full hybrid checks (recommended):
+  Connect-MgGraph -Scopes 'Directory.Read.All', 'AuditLog.Read.All'
+  Import-Module ActiveDirectory
+  $hybFindings = Invoke-TtcHybridAssessment
+
+  $hybFindings | Get-TtcFindingSummary
+
+Notes:
+  - Cloud-only tenants (no Entra Connect sync) return NotAssessed for all checks
+    automatically — no false positives
+  - HYB-CFG-003 (service account privileges) requires the AD module to enumerate
+    the MSOL_* or ADSync service accounts in on-prem AD groups
+  - Run from the Entra Connect server or a machine with AD access for best results
+
+
+================================================================================
+  4d. EXCHANGE ONLINE ASSESSOR
+================================================================================
+
+Checks (10 total):
+  EXO-MON-002  Unified Audit Log Status                    High
+  EXO-MON-001  Mailbox Audit Logging                       Medium
+  EXO-SEC-001  Modern Authentication Status                High
+  EXO-SEC-002  Anti-Malware Policy Configuration           High
+  EXO-SEC-003  DKIM Signing Configuration                  High
+  EXO-CFG-001  SPF and DMARC Record Configuration          High
+  EXO-CFG-002  Automatic External Email Forwarding         High
+  EXO-CFG-003  Connector TLS Enforcement                   Medium
+  EXO-CFG-004  Anti-Spam Outbound Notification             Medium
+  EXO-GOV-001  Exchange Admin Role Hygiene                 High
+
+Prerequisites:
+  - ExchangeOnlineManagement module
+  - Exchange Administrator or Global Reader role in Exchange Online
+
+Usage:
+  Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+
+  $exoFindings = Invoke-TtcExoAssessment
+  $exoFindings | Get-TtcFindingSummary
+
+Notes:
+  - SPF/DMARC check (EXO-CFG-001) uses Resolve-DnsName for live DNS queries —
+    requires network access to public DNS
+  - .onmicrosoft.com domains are excluded from SPF/DMARC checks by default
+  - EXO-CFG-002 (forwarding): AutoForwardingMode=Off is Pass, Automatic=Warning, On=Fail
+  - Connector TLS check only evaluates partner connectors (not default routing)
+
+
+================================================================================
+  4e. DEFENDER FOR OFFICE 365 ASSESSOR
+================================================================================
+
+Checks (8 total):
+  DEF-SEC-001  Safe Links Policy Coverage                  High
+  DEF-SEC-002  Safe Attachments Policy Coverage            High
+  DEF-SEC-003  Anti-Phishing Policy Configuration          High
+  DEF-CFG-001  Preset Security Policy Adoption             Medium
+  DEF-CFG-002  Zero-Hour Auto Purge Configuration          Medium
+  DEF-CFG-003  Defender for Office 365 SPO/Teams/ODB Protection High
+  DEF-MON-001  High-Severity Alert Policy Notification     Medium
+  DEF-MON-002  Compromised Account Alert Policies          Medium
+
+Prerequisites:
+  - Same Connect-ExchangeOnline session as the EXO assessor
+  - No separate Graph connection required
+  - Defender for Office 365 Plan 1 license for DEF-SEC-001, DEF-SEC-002,
+    DEF-CFG-001, and DEF-CFG-003
+
+Usage:
+  # Connect once — both EXO and Defender assessors use this session
+  Connect-ExchangeOnline -UserPrincipalName admin@contoso.com
+
+  $defFindings = Invoke-TtcDefenderAssessment
+  $defFindings | Get-TtcFindingSummary
+
+Notes:
+  - DEF-SEC-001/002/003 return Status=NotAssessed (not Error) for EOP-only tenants
+    without Defender P1 — this is expected and does not reduce the score
+  - DEF-CFG-001 handles both EOP-only preset rules and Defender ATP preset rules
+  - Run the Defender assessor in the same session as Exchange Online for efficiency
+
+
+================================================================================
+  4f. COLLABORATION ASSESSOR (SHAREPOINT, ONEDRIVE, TEAMS, PURVIEW)
+================================================================================
+
+Checks (8 total):
+  COL-SEC-001  SharePoint and OneDrive External Sharing Level  High
+  COL-SEC-002  Anonymous Link Expiration Policy               High
+  COL-SEC-003  External Guest Link Expiration Policy          Medium
+  COL-SEC-004  Default Sharing Link Scope                     Medium
+  COL-GOV-001  Microsoft 365 Groups Guest Access Policy       Medium
+  COL-GOV-002  Sensitivity Labels Published to Users          Medium
+  COL-GOV-003  Microsoft Purview Retention Policy Coverage    Medium
+  COL-GOV-004  Teams External and Guest Access Configuration  Medium
+
+Prerequisites — Required:
+  - Microsoft.Graph.Authentication with scope: SharePointTenantSettings.Read.All
+    and Directory.Read.All
+
+Prerequisites — Optional (graceful fallback if absent):
+  - SPO Management Shell (Connect-SPOService) — fallback if Graph SPO scope denied
+  - Connect-IPPSSession — for COL-GOV-003 retention policy check
+  - Connect-MicrosoftTeams — for COL-GOV-004 Teams policy check
+
+Usage — Minimum (Graph only):
+  Connect-MgGraph -Scopes @(
+      'SharePointTenantSettings.Read.All',
+      'Directory.Read.All'
+  )
+
+  $colFindings = Invoke-TtcCollabAssessment
+  $colFindings | Get-TtcFindingSummary
+
+Usage — Full (all optional connections):
+  Connect-MgGraph -Scopes @(
+      'SharePointTenantSettings.Read.All',
+      'Directory.Read.All'
+  )
+  Connect-IPPSSession -UserPrincipalName admin@contoso.com
+  Connect-MicrosoftTeams
+
+  $colFindings = Invoke-TtcCollabAssessment
+  $colFindings | Get-TtcFindingSummary
+
+Usage — With SPO Management Shell fallback:
+  Connect-SPOService -Url https://contoso-admin.sharepoint.com
+
+  $colFindings = Invoke-TtcCollabAssessment
+  $colFindings | Get-TtcFindingSummary
+
+Notes:
+  - COL-GOV-003 returns NotAssessed if Connect-IPPSSession has not been run
+  - COL-GOV-004 returns NotAssessed if the MicrosoftTeams module is unavailable
+  - Expiration thresholds: Anonymous links default 30 days, Guest links 90 days
+    These can be adjusted with parameters (see Get-Help Invoke-TtcCollabAssessment)
+
+
+================================================================================
+  5. SELECTIVE WORKLOADS AND EXCLUSIONS
+================================================================================
+
+Run specific workloads only:
+  $result = Invoke-TtcAssessment `
+      -Workloads @('ActiveDirectory', 'EntraID') `
+      -CustomerName 'Fabrikam'
+
+  $result = Invoke-TtcAssessment `
+      -Workloads @('ExchangeOnline', 'Defender') `
+      -CustomerName 'Contoso'
+
+Exclude specific workloads:
+  $result = Invoke-TtcAssessment `
+      -ExcludeWorkloads @('Collaboration', 'Defender') `
+      -CustomerName 'Contoso'
+
+Suppress specific checks (e.g. known accepted risks or not-applicable controls):
+  $result = Invoke-TtcAssessment `
+      -ExcludeChecks @('AD-CFG-002', 'ENT-CFG-003') `
+      -CustomerName 'Contoso'
+
+Suppress checks via DefaultConfig.json (persistent, no need to pass every run):
+  Edit TakeItToCloud.Assess\Config\DefaultConfig.json:
+  {
+      "ExcludeChecks": ["AD-CFG-002", "ENT-CFG-003"]
+  }
+
+Skip module prerequisite checks (use if you know prerequisites are met):
+  $result = Invoke-TtcAssessment -SkipPrerequisiteCheck -CustomerName 'Contoso'
+
+Disable CSV or HTML generation:
+  $result = Invoke-TtcAssessment -GenerateCsv $false -GenerateHtml $true -CustomerName 'Contoso'
+
+
+================================================================================
+  6. READING THE RESULTS
+================================================================================
+
+The $result object returned by Invoke-TtcAssessment contains:
+
+  $result.Findings      — Array of all finding objects
+  $result.Scores        — Scoring object (see below)
+  $result.HtmlReport    — Full path to the generated HTML file
+  $result.CsvReport     — Full path to the generated CSV file
+  $result.Workloads     — List of workloads that were assessed
+  $result.Duration      — How long the assessment took
+  $result.GeneratedAt   — ISO 8601 timestamp
+
+Scores object ($result.Scores):
+  $result.Scores.OverallScore      — Weighted average (Security 50%, Health 30%, Governance 20%)
+  $result.Scores.SecurityScore     — Security + Identity + Monitoring findings
+  $result.Scores.HealthScore       — Health + Configuration + Resilience findings
+  $result.Scores.GovernanceScore   — Compliance + Governance findings
+  $result.Scores.WorkloadScores    — Per-workload score breakdown (array)
+
+Score thresholds:
+  85-100  — Good posture
+  65-84   — Moderate risk — prioritise Critical and High findings
+  0-64    — High risk — immediate remediation required
+
+Filtering findings at the console:
+  # Only failures
+  $result.Findings | Where-Object { $_.Status -eq 'Fail' }
+
+  # Critical findings only
+  $result.Findings | Where-Object { $_.Severity -eq 'Critical' -and $_.Status -eq 'Fail' }
+
+  # Specific workload
+  $result.Findings | Where-Object { $_.Workload -eq 'ActiveDirectory' }
+
+  # Fixable findings only
+  $result.Findings | Where-Object { $_.AutoFixAvailable -in @('Yes','Partial') -and $_.Status -eq 'Fail' }
+
+  # Export filtered results to a grid view
+  $result.Findings | Where-Object { $_.Status -eq 'Fail' } | Out-GridView
+
+
+================================================================================
+  7. CONSOLE SUMMARY (GET-TTCFINDINGSUMMARY)
+================================================================================
+
+Quick colour-coded summary — no files written, instant output.
+
+  # With pre-computed scores (faster)
+  Get-TtcFindingSummary -Findings $result.Findings -Scores $result.Scores -CustomerName 'Contoso'
+
+  # Without scores (calculated internally)
+  Get-TtcFindingSummary -Findings $result.Findings
+
+  # Pipeline usage
+  $result.Findings | Get-TtcFindingSummary -CustomerName 'Contoso'
+
+  # Show only Critical findings in the top section
+  Get-TtcFindingSummary -Findings $result.Findings -TopFindingsSeverity Critical
+
+  # Show up to 20 top findings
+  Get-TtcFindingSummary -Findings $result.Findings -TopFindingsCount 20
+
+  # Capture summary data for further scripting
+  $summary = Get-TtcFindingSummary -Findings $result.Findings -PassThru
+  $summary.CriticalFailCount
+  $summary.OverallScore
+  $summary.TopFindings
+
+Output sections:
+  - Overall score bar + Security / Health / Governance scores
+  - Finding counts by severity (Fail + Warning)
+  - Per-workload table sorted by score (worst first)
+  - Top priority findings with issue text
+
+
+================================================================================
+  8. GENERATING A REMEDIATION SCRIPT (INVOKE-TTCAUTOFIX)
+================================================================================
+
+Creates a documented, ready-to-review PowerShell remediation script.
+Does NOT execute anything — the output script must be reviewed and run separately.
+
+  # Default: Critical + High fixable findings
+  Invoke-TtcAutoFix -Findings $result.Findings -OutputPath 'C:\Reports\Remediation.ps1'
+
+  # Include Medium severity findings
+  Invoke-TtcAutoFix -Findings $result.Findings -SeverityFilter Medium -OutputPath 'C:\Reports\Remediation.ps1'
+
+  # Include partial-fix findings (default is already $true)
+  Invoke-TtcAutoFix -Findings $result.Findings -IncludePartial -OutputPath 'C:\Reports\Remediation.ps1'
+
+  # Preview what would be generated without writing the file
+  Invoke-TtcAutoFix -Findings $result.Findings -OutputPath 'C:\Reports\Remediation.ps1' -WhatIf
+
+  # Pipeline usage (e.g. from a single assessor)
+  Invoke-TtcAdAssessment | Invoke-TtcAutoFix -OutputPath 'C:\Reports\AD_Fix.ps1'
+
+  # Get the output path for further scripting
+  $scriptPath = Invoke-TtcAutoFix -Findings $result.Findings -PassThru
+
+What the generated script contains:
+  - Safety header with generation timestamp and warning notice
+  - Per-finding remediation blocks with metadata as comments
+  - ShouldProcess confirmation guard per finding (supports -WhatIf and -Force)
+  - PowerShell cmdlet lines from the Remediation field as executable code
+  - Summary of manual-only findings that require portal action
+
+Running the generated script:
+  # Review mode — preview all changes without applying them
+  .\Remediation.ps1 -WhatIf
+
+  # Run with per-finding confirmation prompts (default)
+  .\Remediation.ps1
+
+  # Run without per-finding prompts (use with caution)
+  .\Remediation.ps1 -Force
+
+
+================================================================================
+  9. REPORTS — CSV AND HTML
+================================================================================
+
+AUTOMATIC — Invoke-TtcAssessment generates CSV and HTML reports automatically.
+You do not need to run Export-TtcCsvReport or Export-TtcHtmlReport yourself.
+
+  $result = Invoke-TtcAssessment -CustomerName 'Contoso' -OutputPath 'C:\Reports'
+  # Reports are written to C:\Reports\ with a timestamp in the filename:
+  #   TtcAssessment_20260320_143022.csv
+  #   TtcAssessment_20260320_143022.html
+
+  Start-Process $result.HtmlReport    # open the HTML report in your browser
+  Start-Process $result.CsvReport     # open the CSV in Excel
+
+Report format details:
+  CSV  — UTF-8 with BOM (Excel-compatible), one row per finding, all 21 fields as columns
+  HTML — Fully self-contained (no internet required to view), dark navy + green theme,
+         interactive filters (Severity, Workload, Category, Status, Framework),
+         full-text search, executive summary, score cards, findings table, remediation section
+
+To disable a report type:
+  $result = Invoke-TtcAssessment -GenerateCsv $false -CustomerName 'Contoso'   # HTML only
+  $result = Invoke-TtcAssessment -GenerateHtml $false -CustomerName 'Contoso'  # CSV only
+
+---
+MANUAL GENERATION — only needed in these specific cases:
+
+  Case 1: You ran an individual assessor (not Invoke-TtcAssessment)
+    $adFindings = Invoke-TtcAdAssessment
+    $scores     = Get-TtcAssessmentScore -Findings $adFindings
+    Export-TtcCsvReport  -Findings $adFindings -OutputPath 'C:\Reports\AD.csv'
+    Export-TtcHtmlReport -Findings $adFindings -Scores $scores -OutputPath 'C:\Reports\AD.html' `
+        -CustomerName 'Contoso' -AssessedBy 'Carlos'
+
+  Case 2: You want to regenerate the HTML with corrected metadata after the fact
+    Export-TtcHtmlReport -Findings $result.Findings -Scores $result.Scores `
+        -OutputPath 'C:\Reports\Contoso_Final.html' `
+        -ReportTitle 'Contoso Infrastructure Assessment' `
+        -CustomerName 'Contoso Ltd' -AssessedBy 'Carlos'
+
+Re-score without re-running the assessment:
+  $scores = Get-TtcAssessmentScore -Findings $result.Findings
+  $scores.OverallScore
+
+
+================================================================================
+  10. CONFIGURATION FILE (DEFAULTCONFIG.JSON)
+================================================================================
+
+Location: TakeItToCloud.Assess\Config\DefaultConfig.json
+
+Settings in this file apply as defaults to every Invoke-TtcAssessment run.
+Parameters passed directly to Invoke-TtcAssessment override config file values.
+
+Current config options:
+  {
+      "AssessmentName":  "TakeItToCloud Assessment",
+      "Workloads":       ["ActiveDirectory","EntraID","HybridIdentity","ExchangeOnline","Defender","Collaboration"],
+      "ExcludeWorkloads": [],
+      "ExcludeChecks":   [],          <-- add FindingIds here to suppress permanently
+      "OutputPath":      "./Reports",
+      "GenerateCsv":     true,
+      "GenerateHtml":    true,
+      "EnvironmentMetadata": {
+          "CustomerName": "",         <-- set to avoid typing it every run
+          "AssessedBy":   "",
+          "EngagementId": ""
+      }
+  }
+
+Example — pre-configure for a customer engagement:
+  {
+      "ExcludeChecks":   ["AD-CFG-002"],
+      "OutputPath":      "C:\\Assessments\\Contoso\\Reports",
+      "EnvironmentMetadata": {
+          "CustomerName": "Contoso Ltd",
+          "AssessedBy":   "Carlos"
+      }
+  }
+
+
+================================================================================
+  11. FINDING STATUS REFERENCE
+================================================================================
+
+  Fail          — Check ran and found a security or configuration issue
+  Warning       — Check ran and found a suboptimal condition (not a hard failure)
+  Pass          — Check ran and the control is correctly configured
+  NotAssessed   — Check was skipped (expected — prerequisite unavailable or not applicable)
+  Error         — Check encountered an unexpected runtime error (review logs)
+
+Severity levels and scoring weights:
+  Critical      — Weight 10  — Immediate exploitation risk
+  High          — Weight 7   — Significant security or operational gap
+  Medium        — Weight 4   — Notable weakness
+  Low           — Weight 1   — Minor improvement opportunity
+  Informational — Weight 0   — Best practice note, no score impact
+
+Scoring formula per category:
+  Score = MAX(0,  100 - SUM(weight of Fail findings) - SUM(weight of Warning × 0.5))
+
+Overall Score = (Security × 50%) + (Health × 30%) + (Governance × 20%)
+
+
+================================================================================
+  12. QUICK REFERENCE CARD
+================================================================================
+
+FULL ASSESSMENT
+  Connect-MgGraph -Scopes 'Directory.Read.All','AuditLog.Read.All','Policy.Read.All','Reports.Read.All','IdentityRiskyUser.Read.All','SharePointTenantSettings.Read.All'
+  Connect-ExchangeOnline -UserPrincipalName admin@domain.com
+  $result = Invoke-TtcAssessment -CustomerName 'Customer' -AssessedBy 'You' -OutputPath 'C:\Reports'
+  Get-TtcFindingSummary -Findings $result.Findings -Scores $result.Scores
+  Invoke-TtcAutoFix -Findings $result.Findings -OutputPath 'C:\Reports\Fix.ps1'
+
+AD ONLY
+  Import-Module ActiveDirectory
+  Invoke-TtcAdAssessment | Get-TtcFindingSummary
+
+ENTRA ID ONLY
+  Connect-MgGraph -Scopes 'Directory.Read.All','AuditLog.Read.All','Policy.Read.All','Reports.Read.All','IdentityRiskyUser.Read.All'
+  Invoke-TtcEntraAssessment | Get-TtcFindingSummary
+
+HYBRID IDENTITY ONLY
+  Connect-MgGraph -Scopes 'Directory.Read.All','AuditLog.Read.All'
+  Import-Module ActiveDirectory  # optional
+  Invoke-TtcHybridAssessment | Get-TtcFindingSummary
+
+EXCHANGE ONLINE ONLY
+  Connect-ExchangeOnline -UserPrincipalName admin@domain.com
+  Invoke-TtcExoAssessment | Get-TtcFindingSummary
+
+DEFENDER ONLY (reuses EXO session)
+  Connect-ExchangeOnline -UserPrincipalName admin@domain.com
+  Invoke-TtcDefenderAssessment | Get-TtcFindingSummary
+
+COLLABORATION ONLY
+  Connect-MgGraph -Scopes 'SharePointTenantSettings.Read.All','Directory.Read.All'
+  Invoke-TtcCollabAssessment | Get-TtcFindingSummary
+
+REMEDIATION SCRIPT
+  Invoke-TtcAutoFix -Findings $result.Findings -OutputPath 'Fix.ps1'           # High+ only
+  Invoke-TtcAutoFix -Findings $result.Findings -SeverityFilter Medium -OutputPath 'Fix.ps1'
+  .\Fix.ps1 -WhatIf   # preview before running
+
+FILTER FINDINGS
+  $result.Findings | Where-Object { $_.Status -eq 'Fail' -and $_.Severity -eq 'Critical' }
+  $result.Findings | Where-Object { $_.Workload -eq 'ActiveDirectory' }
+  $result.Findings | Where-Object { $_.AutoFixAvailable -in 'Yes','Partial' }
+  $result.Findings | Where-Object { $_.Status -eq 'Fail' } | Out-GridView
+
+BUILT-IN HELP
+  Get-Help Invoke-TtcAssessment      -Full
+  Get-Help Invoke-TtcAdAssessment    -Full
+  Get-Help Invoke-TtcEntraAssessment -Full
+  Get-Help Invoke-TtcAutoFix         -Full
+  Get-Help Get-TtcFindingSummary     -Full
+
+================================================================================
+  TakeItToCloud.Assess | github.com/TakeItoCloud/TakeItToCloud.Assess
+================================================================================
