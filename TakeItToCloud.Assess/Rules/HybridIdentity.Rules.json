@@ -1,0 +1,95 @@
+{
+    "RulePackName": "HybridIdentity",
+    "Version": "1.0.0",
+    "Description": "Assessment rules for Hybrid Identity configurations including Entra Connect, sync, and federation.",
+    "Rules": [
+        {
+            "RuleId": "HYB-HLT-001",
+            "CheckName": "Entra Connect Sync Health",
+            "Category": "Health",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Identify",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Validates Entra Connect sync status and last sync time"
+        },
+        {
+            "RuleId": "HYB-HLT-002",
+            "CheckName": "Sync Error Detection",
+            "Category": "Health",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks for synchronization errors between on-premises AD and Entra ID"
+        },
+        {
+            "RuleId": "HYB-SEC-001",
+            "CheckName": "Certificate Expiry Check",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks for certificates nearing or past expiry in hybrid identity components"
+        },
+        {
+            "RuleId": "HYB-SEC-002",
+            "CheckName": "Password Hash Sync / PTA / Federation Posture",
+            "Category": "Security",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-SecureConfig",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Evaluates the authentication method configuration for hybrid identity"
+        },
+        {
+            "RuleId": "HYB-SEC-003",
+            "CheckName": "Break-Glass Account Protection",
+            "Category": "Security",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Validates break-glass emergency access account configuration"
+        },
+        {
+            "RuleId": "HYB-IDN-001",
+            "CheckName": "MFA Gaps for Privileged Accounts",
+            "Category": "Identity",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "MFA for admins",
+            "Description": "Identifies privileged accounts without MFA enforcement"
+        },
+        {
+            "RuleId": "HYB-SEC-004",
+            "CheckName": "Conditional Access Coverage for Hybrid",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Conditional Access policies",
+            "Description": "Checks Conditional Access coverage for hybrid authentication scenarios"
+        },
+        {
+            "RuleId": "HYB-SEC-005",
+            "CheckName": "Legacy Authentication Exposure in Hybrid",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-SecureConfig",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Block legacy authentication",
+            "Description": "Checks if legacy auth protocols can bypass Conditional Access in hybrid environments"
+        }
+    ]
+}

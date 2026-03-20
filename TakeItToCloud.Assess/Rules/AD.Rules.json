@@ -1,0 +1,95 @@
+{
+    "RulePackName": "ActiveDirectory",
+    "Version": "1.0.0",
+    "Description": "Assessment rules for on-premises Active Directory health, security, and configuration.",
+    "Rules": [
+        {
+            "RuleId": "AD-HLT-001",
+            "CheckName": "Domain Controller Replication Health",
+            "Category": "Health",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Checks for AD replication failures between domain controllers"
+        },
+        {
+            "RuleId": "AD-HLT-002",
+            "CheckName": "DNS Health Dependencies",
+            "Category": "Health",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Identify",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Validates DNS infrastructure supporting Active Directory"
+        },
+        {
+            "RuleId": "AD-HLT-003",
+            "CheckName": "FSMO Role Visibility",
+            "Category": "Health",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Identify",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Verifies all FSMO role holders are reachable and responsive"
+        },
+        {
+            "RuleId": "AD-SEC-001",
+            "CheckName": "Stale Privileged Group Members",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks for accounts in privileged groups that have not logged in recently"
+        },
+        {
+            "RuleId": "AD-SEC-002",
+            "CheckName": "Inactive Admin Accounts",
+            "Category": "Security",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Identifies admin accounts with no recent logon activity"
+        },
+        {
+            "RuleId": "AD-SEC-003",
+            "CheckName": "Password Policy Weaknesses",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Evaluates domain password policy against security best practices"
+        },
+        {
+            "RuleId": "AD-SEC-004",
+            "CheckName": "Delegation Configuration Issues",
+            "Category": "Security",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Reviews unconstrained and dangerous delegation settings"
+        },
+        {
+            "RuleId": "AD-MON-001",
+            "CheckName": "Audit Policy Gaps",
+            "Category": "Monitoring",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "",
+            "Description": "Checks that critical audit policies are configured for security monitoring"
+        }
+    ]
+}

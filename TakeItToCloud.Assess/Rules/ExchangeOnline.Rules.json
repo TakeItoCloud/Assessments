@@ -1,0 +1,6 @@
+{
+    "RulePackName": "ExchangeOnline",
+    "Version": "1.0.0",
+    "Description": "Assessment rules for Exchange Online mail flow, connectors, and security posture. (Phase 4)",
+    "Rules": []
+}

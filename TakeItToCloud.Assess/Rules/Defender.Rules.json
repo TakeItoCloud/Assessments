@@ -1,0 +1,6 @@
+{
+    "RulePackName": "Defender",
+    "Version": "1.0.0",
+    "Description": "Assessment rules for Microsoft Defender onboarding, threat protection, and security baselines. (Phase 4)",
+    "Rules": []
+}

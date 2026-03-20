@@ -1,0 +1,95 @@
+{
+    "RulePackName": "EntraID",
+    "Version": "1.0.0",
+    "Description": "Assessment rules for Microsoft Entra ID identity security, Conditional Access, and governance.",
+    "Rules": [
+        {
+            "RuleId": "ENT-SEC-001",
+            "CheckName": "MFA Posture for All Users",
+            "Category": "Security",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "MFA registration",
+            "Description": "Checks that MFA is enforced or registered for all users"
+        },
+        {
+            "RuleId": "ENT-SEC-002",
+            "CheckName": "Conditional Access Policy Coverage",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Protect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Conditional Access policies",
+            "Description": "Evaluates Conditional Access policy coverage and identifies gaps"
+        },
+        {
+            "RuleId": "ENT-IDN-001",
+            "CheckName": "Global Admin Role Assignment Hygiene",
+            "Category": "Identity",
+            "DefaultSeverity": "Critical",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-AccessControl",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Admin roles",
+            "Description": "Reviews the number and configuration of Global Administrator assignments"
+        },
+        {
+            "RuleId": "ENT-SEC-003",
+            "CheckName": "Legacy Authentication Exposure",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-SecureConfig",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "Block legacy authentication",
+            "Description": "Checks whether legacy authentication protocols are blocked"
+        },
+        {
+            "RuleId": "ENT-SEC-004",
+            "CheckName": "Risky User Monitoring",
+            "Category": "Security",
+            "DefaultSeverity": "High",
+            "Enabled": true,
+            "FrameworkMapping": "NIST-Detect",
+            "ZeroTrustPillar": "Identity",
+            "SecureScoreMapping": "",
+            "Description": "Checks for unresolved risky user detections in Identity Protection"
+        },
+        {
+            "RuleId": "ENT-GOV-001",
+            "CheckName": "Application Consent Risk",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.9",
+            "ZeroTrustPillar": "Applications",
+            "SecureScoreMapping": "App consent policies",
+            "Description": "Reviews application consent settings and identifies overly permissive configurations"
+        },
+        {
+            "RuleId": "ENT-GOV-002",
+            "CheckName": "External Collaboration Settings",
+            "Category": "Governance",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "ISO27001-A.9",
+            "ZeroTrustPillar": "Data",
+            "SecureScoreMapping": "",
+            "Description": "Evaluates guest invitation and external sharing policies"
+        },
+        {
+            "RuleId": "ENT-MON-001",
+            "CheckName": "Audit Log Coverage",
+            "Category": "Monitoring",
+            "DefaultSeverity": "Medium",
+            "Enabled": true,
+            "FrameworkMapping": "CIS-ContinuousMonitoring",
+            "ZeroTrustPillar": "Infrastructure",
+            "SecureScoreMapping": "Audit logging",
+            "Description": "Verifies that unified audit logging is enabled and operational"
+        }
+    ]
+}

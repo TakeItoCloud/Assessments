@@ -1,0 +1,29 @@
+{
+    "AssessmentName": "TakeItToCloud Assessment",
+    "Workloads": [
+        "ActiveDirectory",
+        "EntraID",
+        "HybridIdentity",
+        "ExchangeOnline",
+        "Defender",
+        "Collaboration"
+    ],
+    "ExcludeWorkloads": [],
+    "ExcludeChecks": [],
+    "SeverityFilter": [
+        "Critical",
+        "High",
+        "Medium",
+        "Low",
+        "Informational"
+    ],
+    "OutputPath": "./Reports",
+    "LogPath": "./Logs",
+    "GenerateCsv": true,
+    "GenerateHtml": true,
+    "EnvironmentMetadata": {
+        "CustomerName": "",
+        "AssessedBy": "TakeItToCloud",
+        "EngagementId": ""
+    }
+}

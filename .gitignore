@@ -1,0 +1,8 @@
+# Logs and reports (generated at runtime)
+TakeItToCloud.Assess/Logs/
+TakeItToCloud.Assess/DemoReports/
+Reports/
+
+# OS files
+Thumbs.db
+.DS_Store
