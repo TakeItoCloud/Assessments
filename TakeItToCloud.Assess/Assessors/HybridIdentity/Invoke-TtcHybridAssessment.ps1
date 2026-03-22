@@ -62,7 +62,7 @@ function Invoke-TtcHybridAssessment {
             Write-TtcLog -Level Info -Message "Graph connected as: $($ctx.Account)"
         }
         else {
-            Write-TtcLog -Level Warning -Message "Microsoft Graph not connected — cloud-side hybrid checks will be skipped"
+            Write-TtcLog -Level Warning -Message "Microsoft Graph not connected  -  cloud-side hybrid checks will be skipped"
         }
     }
     catch {
@@ -77,7 +77,7 @@ function Invoke-TtcHybridAssessment {
             Write-TtcLog -Level Info -Message "ActiveDirectory module loaded"
         }
         else {
-            Write-TtcLog -Level Warning -Message "ActiveDirectory module not available — on-premises hybrid checks will be skipped"
+            Write-TtcLog -Level Warning -Message "ActiveDirectory module not available  -  on-premises hybrid checks will be skipped"
         }
     }
     catch {
@@ -89,7 +89,7 @@ function Invoke-TtcHybridAssessment {
             -FindingId 'HYB-HLT-001' -Workload 'HybridIdentity' -Component 'Prerequisites' `
             -CheckName 'Directory Sync Status' -Category 'Health' -Severity 'Critical' `
             -Status 'Error' `
-            -IssueDetected 'Neither Microsoft Graph nor ActiveDirectory module are available — hybrid assessment cannot proceed.' `
+            -IssueDetected 'Neither Microsoft Graph nor ActiveDirectory module are available  -  hybrid assessment cannot proceed.' `
             -PossibleSolution 'Install Microsoft.Graph module: Install-Module Microsoft.Graph. Connect: Connect-MgGraph. Install RSAT: Add-WindowsCapability -Online -Name RSAT.ActiveDirectory*.' `
             -Impact 'No hybrid identity assessment data can be collected.' `
             -DataSource 'Get-MgContext;Get-Module' -AutoFixAvailable 'No' -RemediationPriority 'P1'))
@@ -108,7 +108,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-HLT-001 — Directory Sync Status (Last Sync Time)
+    # HYB-HLT-001  -  Directory Sync Status (Last Sync Time)
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -118,7 +118,7 @@ function Invoke-TtcHybridAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'HYB-HLT-001' -Workload 'HybridIdentity' -Component 'EntraConnect' `
                 -CheckName 'Directory Sync Status' -Category 'Health' -Severity 'High' `
-                -Status 'Error' -IssueDetected 'Graph not connected — directory sync status cannot be assessed.' `
+                -Status 'Error' -IssueDetected 'Graph not connected  -  directory sync status cannot be assessed.' `
                 -DataSource 'Get-MgOrganization' -Notes 'Connect-MgGraph required'))
         }
         elseif (-not $org.OnPremisesSyncEnabled) {
@@ -126,7 +126,7 @@ function Invoke-TtcHybridAssessment {
                 -FindingId 'HYB-HLT-001' -Workload 'HybridIdentity' -Component 'EntraConnect' `
                 -CheckName 'Directory Sync Status' -Category 'Health' -Severity 'Informational' `
                 -Status 'NotAssessed' `
-                -IssueDetected 'Directory synchronization is not enabled for this tenant — cloud-only environment.' `
+                -IssueDetected 'Directory synchronization is not enabled for this tenant  -  cloud-only environment.' `
                 -Explanation 'This tenant does not have Entra Connect configured. All users are cloud-native. Hybrid Identity checks are not applicable.' `
                 -DataSource 'Get-MgOrganization' -Notes 'OnPremisesSyncEnabled: false'))
         }
@@ -156,7 +156,7 @@ function Invoke-TtcHybridAssessment {
                         -FindingId 'HYB-HLT-001' -Workload 'HybridIdentity' -Component 'EntraConnect' `
                         -CheckName 'Directory Sync Status' -Category 'Health' -Severity 'High' `
                         -Status 'Pass' `
-                        -IssueDetected "Last directory sync was $syncAge minutes ago — within the $MaxSyncAgeMins-minute threshold." `
+                        -IssueDetected "Last directory sync was $syncAge minutes ago  -  within the $MaxSyncAgeMins-minute threshold." `
                         -DataSource 'Get-MgOrganization' `
                         -Notes "Last sync: $lastSync (UTC)"))
                 }
@@ -166,7 +166,7 @@ function Invoke-TtcHybridAssessment {
                     -FindingId 'HYB-HLT-001' -Workload 'HybridIdentity' -Component 'EntraConnect' `
                     -CheckName 'Directory Sync Status' -Category 'Health' -Severity 'Critical' `
                     -Status 'Fail' `
-                    -IssueDetected 'Directory sync is enabled but no sync timestamp is recorded — sync may have never completed successfully.' `
+                    -IssueDetected 'Directory sync is enabled but no sync timestamp is recorded  -  sync may have never completed successfully.' `
                     -Explanation 'Entra Connect reports no last sync timestamp despite being configured. This indicates the synchronization process has never completed successfully, or the Entra Connect installation is corrupted.' `
                     -PossibleSolution 'Reinstall or repair Entra Connect. Check the Synchronization Service Manager for persistent errors. Verify network access from the Entra Connect server to Microsoft endpoints.' `
                     -Impact 'On-premises directory is not syncing to Entra ID. Hybrid authentication, conditional access based on on-prem groups, and seamless SSO may be non-functional.' `
@@ -186,7 +186,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-HLT-002 — Password Hash Sync Currency
+    # HYB-HLT-002  -  Password Hash Sync Currency
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -200,7 +200,7 @@ function Invoke-TtcHybridAssessment {
                     -FindingId 'HYB-HLT-002' -Workload 'HybridIdentity' -Component 'PasswordSync' `
                     -CheckName 'Password Hash Sync Currency' -Category 'Health' -Severity 'Medium' `
                     -Status 'Warning' `
-                    -IssueDetected 'No password hash sync timestamp recorded — PHS may not be configured or has never completed.' `
+                    -IssueDetected 'No password hash sync timestamp recorded  -  PHS may not be configured or has never completed.' `
                     -Explanation 'Password Hash Synchronization (PHS) is recommended as an authentication resilience feature even when PTA or Federation is the primary method. No PHS timestamp may indicate PHS is disabled or misconfigured.' `
                     -PossibleSolution 'Enable PHS as a backup authentication method: In Entra Connect wizard, configure Password Hash Synchronization. Even with PTA/ADFS primary auth, PHS provides leaked credential detection and fallback authentication.' `
                     -Impact 'Without PHS, the tenant cannot leverage leaked credential detection in Entra Identity Protection. No authentication fallback if the PTA agent or ADFS goes offline.' `
@@ -232,7 +232,7 @@ function Invoke-TtcHybridAssessment {
                         -FindingId 'HYB-HLT-002' -Workload 'HybridIdentity' -Component 'PasswordSync' `
                         -CheckName 'Password Hash Sync Currency' -Category 'Health' -Severity 'Medium' `
                         -Status 'Pass' `
-                        -IssueDetected "Password hash sync is current — last sync was $pwdSyncAge minutes ago." `
+                        -IssueDetected "Password hash sync is current  -  last sync was $pwdSyncAge minutes ago." `
                         -DataSource 'Get-MgOrganization' `
                         -Notes "Last PHS: $lastPwdSync (UTC)"))
                 }
@@ -242,7 +242,7 @@ function Invoke-TtcHybridAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'HYB-HLT-002' -Workload 'HybridIdentity' -Component 'PasswordSync' `
                 -CheckName 'Password Hash Sync Currency' -Category 'Health' -Severity 'Medium' `
-                -Status 'NotAssessed' -IssueDetected 'Graph not connected or sync not enabled — PHS check skipped.' `
+                -Status 'NotAssessed' -IssueDetected 'Graph not connected or sync not enabled  -  PHS check skipped.' `
                 -DataSource 'Get-MgOrganization'))
         }
     }
@@ -256,7 +256,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-CFG-001 — Password Hash Sync Enabled
+    # HYB-CFG-001  -  Password Hash Sync Enabled
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -298,7 +298,7 @@ function Invoke-TtcHybridAssessment {
                     -Impact 'Without PHS: no leaked credential detection, no auth fallback if on-premises auth infrastructure fails, potential complete authentication outage if ADFS or PTA agents go offline.' `
                     -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Identity' `
                     -DataSource 'Get-MgOrganization' `
-                    -Remediation 'Run Entra Connect configuration wizard. On "Optional features" page, enable "Password hash synchronization". This can coexist with PTA or Federation as a fallback. After enabling, verify with: (Get-MgOrganization).OnPremisesLastPasswordSyncDateTime — should populate within minutes.' `
+                    -Remediation 'Run Entra Connect configuration wizard. On "Optional features" page, enable "Password hash synchronization". This can coexist with PTA or Federation as a fallback. After enabling, verify with: (Get-MgOrganization).OnPremisesLastPasswordSyncDateTime  -  should populate within minutes.' `
                     -AutoFixAvailable 'No' -RemediationPriority 'P3' `
                     -Notes 'No OnPremisesLastPasswordSyncDateTime in tenant record'))
             }
@@ -321,7 +321,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-CFG-002 — Authentication Mode Assessment
+    # HYB-CFG-002  -  Authentication Mode Assessment
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -384,7 +384,7 @@ function Invoke-TtcHybridAssessment {
                     -FindingId 'HYB-CFG-002' -Workload 'HybridIdentity' -Component 'AuthMethod' `
                     -CheckName 'Authentication Mode Assessment' -Category 'Configuration' -Severity 'Low' `
                     -Status 'Pass' `
-                    -IssueDetected 'Password Hash Sync (managed authentication) is configured — the recommended authentication method.' `
+                    -IssueDetected 'Password Hash Sync (managed authentication) is configured  -  the recommended authentication method.' `
                     -Explanation 'PHS managed authentication is Microsoft''s recommended approach. It provides the best resilience (no on-premises dependency), Seamless SSO, and leaked credential detection without ADFS or PTA agent infrastructure.' `
                     -DataSource 'Get-MgOrganization' `
                     -Notes $notes))
@@ -408,7 +408,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-HLT-003 — Sync Error Objects
+    # HYB-HLT-003  -  Sync Error Objects
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -482,7 +482,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-SEC-001 — On-Premises Privileged Accounts Synced to Cloud
+    # HYB-SEC-001  -  On-Premises Privileged Accounts Synced to Cloud
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -584,7 +584,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-SEC-002 — Break-Glass Accounts Are Cloud-Only (Not Synced)
+    # HYB-SEC-002  -  Break-Glass Accounts Are Cloud-Only (Not Synced)
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -612,7 +612,7 @@ function Invoke-TtcHybridAssessment {
                         -FindingId 'HYB-SEC-002' -Workload 'HybridIdentity' -Component 'BreakGlass' `
                         -CheckName 'Break-Glass Accounts Are Cloud-Only' -Category 'Security' -Severity 'High' `
                         -Status 'Fail' `
-                        -IssueDetected "$syncedGACount Global Administrator(s) are synced from on-premises AD — break-glass accounts must be cloud-only." `
+                        -IssueDetected "$syncedGACount Global Administrator(s) are synced from on-premises AD  -  break-glass accounts must be cloud-only." `
                         -Explanation 'Break-glass (emergency access) Global Administrators must be cloud-only accounts, not synchronized from on-premises AD. If on-premises AD is compromised (e.g., ransomware), synced accounts could be modified or deleted, removing cloud admin access at the worst possible time.' `
                         -PossibleSolution 'Create separate cloud-only Global Admin accounts with @tenant.onmicrosoft.com UPN. Remove GA roles from synced accounts. Store break-glass credentials in an offline vault. Enable alerting for any sign-in activity from these accounts.' `
                         -Impact 'If on-premises AD is compromised and GA accounts are synced, the attacker can delete or modify cloud admin accounts, locking legitimate admins out of the tenant at the moment they need access most.' `
@@ -644,7 +644,7 @@ function Invoke-TtcHybridAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'HYB-SEC-002' -Workload 'HybridIdentity' -Component 'BreakGlass' `
                 -CheckName 'Break-Glass Accounts Are Cloud-Only' -Category 'Security' -Severity 'High' `
-                -Status 'NotAssessed' -IssueDetected 'Graph not connected — break-glass account check skipped.' `
+                -Status 'NotAssessed' -IssueDetected 'Graph not connected  -  break-glass account check skipped.' `
                 -DataSource 'Get-MgDirectoryRole'))
         }
     }
@@ -658,7 +658,7 @@ function Invoke-TtcHybridAssessment {
     }
 
     # =========================================================================
-    # HYB-CFG-003 — Entra Connect Service Account Detection
+    # HYB-CFG-003  -  Entra Connect Service Account Detection
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -691,7 +691,7 @@ function Invoke-TtcHybridAssessment {
                         -FindingId 'HYB-CFG-003' -Workload 'HybridIdentity' -Component 'ServiceAccounts' `
                         -CheckName 'Entra Connect Service Account Privileges' -Category 'Security' -Severity 'Critical' `
                         -Status 'Fail' `
-                        -IssueDetected "Entra Connect MSOL_ service account(s) found in privileged AD groups — excessive permissions." `
+                        -IssueDetected "Entra Connect MSOL_ service account(s) found in privileged AD groups  -  excessive permissions." `
                         -Explanation 'The MSOL_ service account is used by Entra Connect to read and write directory data. This account does not need Domain Admin privileges. If it is in Domain Admins or Administrators, it represents an unnecessary privilege escalation path. If the Entra Connect server is compromised, the attacker gains Domain Admin.' `
                         -PossibleSolution 'Remove MSOL_ accounts from all privileged AD groups immediately. The account requires only: Replicate Directory Changes (and Replicate Directory Changes All for PHS) permissions on the domain, which are granted automatically during Entra Connect installation.' `
                         -Impact 'Compromise of the Entra Connect server (which is network-accessible to Microsoft cloud) provides an instant Domain Admin credential.' `
@@ -706,7 +706,7 @@ function Invoke-TtcHybridAssessment {
                         -FindingId 'HYB-CFG-003' -Workload 'HybridIdentity' -Component 'ServiceAccounts' `
                         -CheckName 'Entra Connect Service Account Privileges' -Category 'Configuration' -Severity 'Medium' `
                         -Status 'Pass' `
-                        -IssueDetected "$msolCount Entra Connect MSOL_ service account(s) found — not in privileged AD groups." `
+                        -IssueDetected "$msolCount Entra Connect MSOL_ service account(s) found  -  not in privileged AD groups." `
                         -DataSource 'Get-ADUser' `
                         -Notes $msolDetails))
                 }
@@ -716,7 +716,7 @@ function Invoke-TtcHybridAssessment {
                     -FindingId 'HYB-CFG-003' -Workload 'HybridIdentity' -Component 'ServiceAccounts' `
                     -CheckName 'Entra Connect Service Account Privileges' -Category 'Configuration' -Severity 'Medium' `
                     -Status 'Warning' `
-                    -IssueDetected 'No MSOL_ service accounts found in AD — Entra Connect may not be installed on a domain-joined server, or uses a different naming convention.' `
+                    -IssueDetected 'No MSOL_ service accounts found in AD  -  Entra Connect may not be installed on a domain-joined server, or uses a different naming convention.' `
                     -Explanation 'Entra Connect creates MSOL_ service accounts during installation. If none are found, either Entra Connect is not installed in this domain, uses a custom service account name, or this is a cloud-only deployment.' `
                     -DataSource 'Get-ADUser' `
                     -Notes 'Query: Get-ADUser -Filter "SamAccountName -like ''MSOL_*''" returned 0 results'))
@@ -726,7 +726,7 @@ function Invoke-TtcHybridAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'HYB-CFG-003' -Workload 'HybridIdentity' -Component 'ServiceAccounts' `
                 -CheckName 'Entra Connect Service Account Privileges' -Category 'Configuration' -Severity 'Medium' `
-                -Status 'NotAssessed' -IssueDetected 'ActiveDirectory module unavailable — service account check skipped.' `
+                -Status 'NotAssessed' -IssueDetected 'ActiveDirectory module unavailable  -  service account check skipped.' `
                 -DataSource 'Get-ADUser'))
         }
     }
@@ -739,6 +739,6 @@ function Invoke-TtcHybridAssessment {
             -DataSource 'Get-ADUser' -Notes $_.Exception.Message))
     }
 
-    Write-TtcLog -Level Info -Message "Hybrid Identity assessment complete — $($findings.Count) finding(s) generated"
+    Write-TtcLog -Level Info -Message "Hybrid Identity assessment complete  -  $($findings.Count) finding(s) generated"
     return $findings.ToArray()
 }

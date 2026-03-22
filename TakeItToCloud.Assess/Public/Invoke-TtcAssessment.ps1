@@ -12,13 +12,17 @@ function Invoke-TtcAssessment {
         as defaults, with parameter overrides.
     .PARAMETER Workloads
         Array of workloads to assess. Defaults to all available workloads.
-        Valid values: ActiveDirectory, ExchangeOnline, HybridIdentity, EntraID, Defender, Collaboration.
+        Valid values: ActiveDirectory, ExchangeOnline, HybridIdentity, EntraID, Defender,
+        Collaboration, MDE, PIM, ADCS.
     .PARAMETER ExcludeWorkloads
         Workloads to skip even if listed in Workloads parameter.
     .PARAMETER ExcludeChecks
         Array of FindingId values to exclude from the final results and scoring.
         Example: @('AD-CFG-002', 'ENT-CFG-003') to suppress specific checks.
         Can also be set in DefaultConfig.json under the ExcludeChecks key.
+    .PARAMETER ExcludeChecksFile
+        Path to a text file (one FindingId per line) of checks to exclude.
+        Lines beginning with # are treated as comments and ignored.
     .PARAMETER OutputPath
         Directory for report output. Defaults to ./Reports.
     .PARAMETER ReportTitle
@@ -52,12 +56,14 @@ function Invoke-TtcAssessment {
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
     param(
-        [ValidateSet('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration')]
+        [ValidateSet('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration', 'MDE', 'PIM', 'ADCS')]
         [string[]]$Workloads,
 
         [string[]]$ExcludeWorkloads = @(),
 
         [string[]]$ExcludeChecks = @(),
+
+        [string]$ExcludeChecksFile,
 
         [string]$OutputPath,
 
@@ -106,7 +112,7 @@ function Invoke-TtcAssessment {
             $Workloads = $config.Workloads
         }
         else {
-            $Workloads = @('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration')
+            $Workloads = @('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration', 'MDE', 'PIM', 'ADCS')
         }
     }
 
@@ -139,6 +145,23 @@ function Invoke-TtcAssessment {
         $AssessedBy = $config.EnvironmentMetadata.AssessedBy
     }
 
+    # --- Load ExcludeChecksFile ---
+    if ($ExcludeChecksFile -and (Test-Path -Path $ExcludeChecksFile)) {
+        try {
+            $fileExcludes = Get-Content -Path $ExcludeChecksFile -Encoding UTF8 |
+                Where-Object { $_ -and $_ -notmatch '^\s*#' } |
+                ForEach-Object { $_.Trim() } |
+                Where-Object { $_ }
+            if ($fileExcludes) {
+                $ExcludeChecks = @($ExcludeChecks) + @($fileExcludes) | Select-Object -Unique
+                Write-TtcLog -Level Info -Message "Loaded $($fileExcludes.Count) exclusion(s) from: $ExcludeChecksFile"
+            }
+        }
+        catch {
+            Write-TtcLog -Level Warning -Message "Could not load ExcludeChecksFile: $_"
+        }
+    }
+
     # --- Begin assessment ---
     $startTime = Get-Date
     Write-TtcLog -Level Info -Message "========================================="
@@ -157,17 +180,25 @@ function Invoke-TtcAssessment {
         'EntraID'         = 'Invoke-TtcEntraAssessment'
         'Defender'        = 'Invoke-TtcDefenderAssessment'
         'Collaboration'   = 'Invoke-TtcCollabAssessment'
+        'MDE'             = 'Invoke-TtcMdeAssessment'
+        'PIM'             = 'Invoke-TtcPimAssessment'
+        'ADCS'            = 'Invoke-TtcAdcsAssessment'
     }
 
     # --- Run each workload assessor ---
+    $workloadIndex = 0
     foreach ($workload in $Workloads) {
-        Write-TtcLog -Level Info -Message "--- Assessing: $workload ---"
+        $workloadIndex++
+        Write-Progress -Activity "TakeItToCloud Assessment" `
+            -Status "Assessing $workload ($workloadIndex of $($Workloads.Count))" `
+            -PercentComplete ([int](($workloadIndex / $Workloads.Count) * 100))
+        Write-TtcLog -Level Info -Message "--- Assessing: $workload ($workloadIndex/$($Workloads.Count)) ---"
 
         # Check prerequisites
         if (-not $SkipPrerequisiteCheck) {
             $prereqMet = Test-TtcPrerequisite -Workload $workload
             if (-not $prereqMet) {
-                Write-TtcLog -Level Warning -Message "Prerequisites not met for $workload — generating NotAssessed finding"
+                Write-TtcLog -Level Warning -Message "Prerequisites not met for $workload  -  generating NotAssessed finding"
                 $skipFinding = New-TtcFinding `
                     -FindingId "$($workload.Substring(0, [Math]::Min(3, $workload.Length)).ToUpper())-HLT-000" `
                     -Workload $workload `
@@ -237,6 +268,8 @@ function Invoke-TtcAssessment {
             $ErrorActionPreference = 'Continue'
         }
     }
+
+    Write-Progress -Activity "TakeItToCloud Assessment" -Completed
 
     # --- Apply ExcludeChecks filter ---
     # Merge parameter value with config value; parameter takes precedence

@@ -119,7 +119,7 @@ function Get-TtcAssessmentScore {
             GeneratedAt      = Get-Date -Format 'o'
         }
 
-        Write-TtcLog -Level Info -Message "Scores calculated — Overall: $overallScore | Security: $securityScore | Health: $healthScore | Governance: $governanceScore"
+        Write-TtcLog -Level Info -Message "Scores calculated  -  Overall: $overallScore | Security: $securityScore | Health: $healthScore | Governance: $governanceScore"
         return $result
     }
 }

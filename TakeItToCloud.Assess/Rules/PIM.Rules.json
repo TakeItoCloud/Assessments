@@ -1,0 +1,47 @@
+{
+  "Workload": "EntraID",
+  "Version": "1.0",
+  "Description": "Privileged Identity Management (PIM) assessment rules",
+  "Rules": [
+    {
+      "FindingId": "PIM-CFG-001",
+      "CheckName": "PIM Activation Policy Configuration",
+      "Category": "Identity",
+      "DefaultSeverity": "High",
+      "Description": "Verifies that PIM role activation policies require MFA and justification for critical roles.",
+      "FrameworkMapping": "CIS-AccessControl",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1078.004"
+    },
+    {
+      "FindingId": "PIM-SEC-001",
+      "CheckName": "Stale PIM Eligible Assignments",
+      "Category": "Identity",
+      "DefaultSeverity": "Medium",
+      "Description": "Identifies PIM eligible role assignments with no expiration date.",
+      "FrameworkMapping": "CIS-AccessControl",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": ""
+    },
+    {
+      "FindingId": "PIM-SEC-002",
+      "CheckName": "Standing Privileged Role Assignments",
+      "Category": "Identity",
+      "DefaultSeverity": "High",
+      "Description": "Identifies critical roles assigned as standing (permanent) access rather than PIM eligible.",
+      "FrameworkMapping": "CIS-AccessControl",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1078.004"
+    },
+    {
+      "FindingId": "PIM-GOV-001",
+      "CheckName": "Access Reviews for Privileged Roles",
+      "Category": "Governance",
+      "DefaultSeverity": "Medium",
+      "Description": "Checks that active access reviews exist for PIM eligible role assignments.",
+      "FrameworkMapping": "ISO27001-A.9",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": ""
+    }
+  ]
+}

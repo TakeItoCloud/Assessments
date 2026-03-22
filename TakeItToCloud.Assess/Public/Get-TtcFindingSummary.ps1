@@ -26,18 +26,26 @@ function Get-TtcFindingSummary {
         Maximum number of priority findings to display. Default: 10.
     .PARAMETER PassThru
         When specified, returns a PSCustomObject summary in addition to printing.
+    .PARAMETER OutputFormat
+        Output format. Default: Console (colour-coded terminal output).
+        Markdown: Outputs markdown-formatted text suitable for reports or wikis.
+        JSON: Outputs a structured JSON summary object.
     .EXAMPLE
         # Quick summary after a full assessment
         $result = Invoke-TtcAssessment -CustomerName 'Contoso'
         Get-TtcFindingSummary -Findings $result.Findings -Scores $result.Scores -CustomerName 'Contoso'
     .EXAMPLE
-        # Pipeline usage — summary from AD assessor output
+        # Pipeline usage  -  summary from AD assessor output
         Invoke-TtcAdAssessment | Get-TtcFindingSummary -CustomerName 'Fabrikam'
+    .EXAMPLE
+        # Export markdown summary to file
+        Get-TtcFindingSummary -Findings $result.Findings -OutputFormat Markdown | Out-File '.\summary.md'
     .EXAMPLE
         # Show only Critical findings in the top section
         Get-TtcFindingSummary -Findings $result.Findings -TopFindingsSeverity Critical -PassThru
     .OUTPUTS
         [PSCustomObject] Only when -PassThru is specified.
+        [string] When -OutputFormat is Markdown or JSON.
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
@@ -60,7 +68,11 @@ function Get-TtcFindingSummary {
         [int]$TopFindingsCount = 10,
 
         [Parameter()]
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [Parameter()]
+        [ValidateSet('Console', 'Markdown', 'JSON')]
+        [string]$OutputFormat = 'Console'
     )
 
     begin {
@@ -105,7 +117,7 @@ function Get-TtcFindingSummary {
         # --- Header ---
         Write-Host ''
         Write-Host $line -ForegroundColor DarkCyan
-        Write-Host '  TAKEITTTOCLOUD.ASSESS  —  Assessment Summary' -ForegroundColor Cyan
+        Write-Host '  TAKEITTTOCLOUD.ASSESS   -   Assessment Summary' -ForegroundColor Cyan
         $meta = "  $(Get-Date -Format 'yyyy-MM-dd HH:mm')  |  Findings: $($allFindings.Count)"
         if ($CustomerName) { $meta += "  |  Customer: $CustomerName" }
         Write-Host $meta -ForegroundColor DarkCyan
@@ -131,9 +143,9 @@ function Get-TtcFindingSummary {
             Write-Host $bar -ForegroundColor (& $scoreColour $ov)
             Write-Host ("  Security:   {0,5}    Health:     {1,5}    Governance: {2,5}" -f "$sc/100", "$hc/100", "$gc/100") -ForegroundColor White
 
-            $statusMsg = if ($ov -ge 85)   { '  Good posture — review remaining findings before they escalate.' }
-                         elseif ($ov -ge 65) { '  Moderate risk — prioritise Critical and High findings for immediate remediation.' }
-                         else               { '  High risk — immediate remediation required across multiple areas.' }
+            $statusMsg = if ($ov -ge 85)   { '  Good posture  -  review remaining findings before they escalate.' }
+                         elseif ($ov -ge 65) { '  Moderate risk  -  prioritise Critical and High findings for immediate remediation.' }
+                         else               { '  High risk  -  immediate remediation required across multiple areas.' }
             Write-Host $statusMsg -ForegroundColor (& $scoreColour $ov)
         }
 
@@ -191,7 +203,7 @@ function Get-TtcFindingSummary {
         $topCount = ($topFindings | Measure-Object).Count
         if ($topCount -gt 0) {
             Write-Host ''
-            Write-Host "  TOP FINDINGS ($TopFindingsSeverity+ — top $topCount shown)" -ForegroundColor White
+            Write-Host "  TOP FINDINGS ($TopFindingsSeverity+  -  top $topCount shown)" -ForegroundColor White
             Write-Host $dash -ForegroundColor DarkGray
 
             foreach ($f in $topFindings) {
@@ -204,7 +216,94 @@ function Get-TtcFindingSummary {
             }
         }
 
-        # --- Footer ---
+        # --- Markdown / JSON output modes ---
+        if ($OutputFormat -eq 'Markdown') {
+            $sb = [System.Text.StringBuilder]::new()
+            $header = "# Assessment Summary"
+            if ($CustomerName) { $header += " - $CustomerName" }
+            [void]$sb.AppendLine($header)
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("*Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm') | Findings: $($allFindings.Count)*")
+            [void]$sb.AppendLine()
+
+            if ($Scores) {
+                [void]$sb.AppendLine("## Scores")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("| Domain | Score |")
+                [void]$sb.AppendLine("|--------|-------|")
+                [void]$sb.AppendLine("| Overall | $($Scores.OverallScore)/100 |")
+                [void]$sb.AppendLine("| Security | $($Scores.SecurityScore)/100 |")
+                [void]$sb.AppendLine("| Health | $($Scores.HealthScore)/100 |")
+                [void]$sb.AppendLine("| Governance | $($Scores.GovernanceScore)/100 |")
+                [void]$sb.AppendLine()
+            }
+
+            [void]$sb.AppendLine("## Finding Severity Summary")
+            [void]$sb.AppendLine()
+            [void]$sb.AppendLine("| Severity | Fail/Warning Count |")
+            [void]$sb.AppendLine("|----------|--------------------|")
+            foreach ($sev in @('Critical', 'High', 'Medium', 'Low', 'Informational')) {
+                $cnt = ($actionable | Where-Object { $_.Severity -eq $sev } | Measure-Object).Count
+                if ($cnt -gt 0) {
+                    [void]$sb.AppendLine("| $sev | $cnt |")
+                }
+            }
+            [void]$sb.AppendLine("| Pass | $passCount |")
+            [void]$sb.AppendLine()
+
+            if ($topCount -gt 0) {
+                [void]$sb.AppendLine("## Top Priority Findings")
+                [void]$sb.AppendLine()
+                [void]$sb.AppendLine("| FindingId | Severity | CheckName | Status | Issue |")
+                [void]$sb.AppendLine("|-----------|----------|-----------|--------|-------|")
+                foreach ($f in $topFindings) {
+                    $issue = ($f.IssueDetected -replace '\|', '\|') -replace "`n", ' '
+                    [void]$sb.AppendLine("| $($f.FindingId) | $($f.Severity) | $($f.CheckName) | $($f.Status) | $issue |")
+                }
+                [void]$sb.AppendLine()
+            }
+
+            Write-TtcLog -Level Info -Message "Get-TtcFindingSummary: generated Markdown for $($allFindings.Count) findings"
+            return $sb.ToString()
+        }
+
+        if ($OutputFormat -eq 'JSON') {
+            $severityCounts = @{}
+            foreach ($sev in @('Critical', 'High', 'Medium', 'Low', 'Informational')) {
+                $severityCounts[$sev] = ($actionable | Where-Object { $_.Severity -eq $sev } | Measure-Object).Count
+            }
+            $jsonObj = [PSCustomObject]@{
+                GeneratedAt       = Get-Date -Format 'o'
+                CustomerName      = $CustomerName
+                TotalFindings     = $allFindings.Count
+                SeverityCounts    = $severityCounts
+                PassCount         = $passCount
+                ErrorCount        = $errorCount
+                NotAssessedCount  = $naCount
+                Scores            = if ($Scores) {
+                    [PSCustomObject]@{
+                        Overall    = $Scores.OverallScore
+                        Security   = $Scores.SecurityScore
+                        Health     = $Scores.HealthScore
+                        Governance = $Scores.GovernanceScore
+                    }
+                } else { $null }
+                TopFindings       = @($topFindings | ForEach-Object {
+                    [PSCustomObject]@{
+                        FindingId    = $_.FindingId
+                        Severity     = $_.Severity
+                        Status       = $_.Status
+                        CheckName    = $_.CheckName
+                        IssueDetected = $_.IssueDetected
+                        Workload     = $_.Workload
+                    }
+                })
+            }
+            Write-TtcLog -Level Info -Message "Get-TtcFindingSummary: generated JSON for $($allFindings.Count) findings"
+            return $jsonObj | ConvertTo-Json -Depth 5
+        }
+
+        # --- Footer (Console mode only) ---
         Write-Host ''
         Write-Host $line -ForegroundColor DarkCyan
         Write-Host '  Run Export-TtcHtmlReport for the full report with remediation guidance.' -ForegroundColor DarkCyan

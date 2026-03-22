@@ -44,7 +44,7 @@ function Invoke-TtcDefenderAssessment {
         Write-TtcLog -Level Info -Message "Exchange Online connection verified for Defender assessment"
     }
     catch {
-        Write-TtcLog -Level Warning -Message "Exchange Online not connected — Defender assessment cannot proceed: $($_.Exception.Message)"
+        Write-TtcLog -Level Warning -Message "Exchange Online not connected  -  Defender assessment cannot proceed: $($_.Exception.Message)"
     }
 
     if (-not $exoConnected) {
@@ -52,7 +52,7 @@ function Invoke-TtcDefenderAssessment {
             -FindingId 'DEF-SEC-001' -Workload 'Defender' -Component 'Prerequisites' `
             -CheckName 'Safe Links Policy Coverage' -Category 'Security' -Severity 'High' `
             -Status 'Error' `
-            -IssueDetected 'Exchange Online is not connected — Defender for Office 365 assessment cannot proceed.' `
+            -IssueDetected 'Exchange Online is not connected  -  Defender for Office 365 assessment cannot proceed.' `
             -Explanation 'Defender for Office 365 cmdlets require an active ExchangeOnlineManagement session. All checks in this workload are skipped.' `
             -PossibleSolution 'Run: Connect-ExchangeOnline. Requires Security Administrator or Global Administrator credentials.' `
             -Impact 'No Defender for Office 365 assessment data can be collected.' `
@@ -68,14 +68,14 @@ function Invoke-TtcDefenderAssessment {
         Write-TtcLog -Level Info -Message "Defender for Office 365 Plan 1+ confirmed (Safe Links cmdlets available)"
     }
     catch [System.Management.Automation.CommandNotFoundException] {
-        Write-TtcLog -Level Warning -Message "Get-SafeLinksPolicy cmdlet not found — tenant may not have Defender for Office 365 license"
+        Write-TtcLog -Level Warning -Message "Get-SafeLinksPolicy cmdlet not found  -  tenant may not have Defender for Office 365 license"
     }
     catch {
         Write-TtcLog -Level Warning -Message "Safe Links cmdlet check returned error: $($_.Exception.Message)"
     }
 
     # =========================================================================
-    # DEF-SEC-001 — Safe Links Policy Coverage
+    # DEF-SEC-001  -  Safe Links Policy Coverage
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -86,7 +86,7 @@ function Invoke-TtcDefenderAssessment {
                 -FindingId 'DEF-SEC-001' -Workload 'Defender' -Component 'SafeLinks' `
                 -CheckName 'Safe Links Policy Coverage' -Category 'Security' -Severity 'High' `
                 -Status 'NotAssessed' `
-                -IssueDetected 'Safe Links cmdlets are not available — tenant does not appear to have Defender for Office 365 Plan 1 or higher.' `
+                -IssueDetected 'Safe Links cmdlets are not available  -  tenant does not appear to have Defender for Office 365 Plan 1 or higher.' `
                 -Explanation 'Safe Links requires Microsoft Defender for Office 365 Plan 1 (included in Microsoft 365 Business Premium, E3+Defender, E5). Without it, URL rewriting and time-of-click protection against malicious links is not available.' `
                 -PossibleSolution 'License users for Microsoft Defender for Office 365 Plan 1 or Plan 2 (included in M365 E5, M365 Business Premium, or as an add-on). After licensing, configure Safe Links policies in the Security portal.' `
                 -Impact 'Users clicking malicious links in email or Office documents are not protected by time-of-click URL inspection. Phishing and malware delivery via URL is undetected at the click event.' `
@@ -111,7 +111,7 @@ function Invoke-TtcDefenderAssessment {
 
             if ($enabledRuleCount -gt 0 -or $builtInActive) {
                 $coverage = if ($builtInActive) { 'Built-in protection active (all users covered)' }
-                            else { "$enabledRuleCount enabled Safe Links rule(s) — verify recipient scope covers all users" }
+                            else { "$enabledRuleCount enabled Safe Links rule(s)  -  verify recipient scope covers all users" }
 
                 $findings.Add((New-TtcFinding `
                     -FindingId 'DEF-SEC-001' -Workload 'Defender' -Component 'SafeLinks' `
@@ -127,7 +127,7 @@ function Invoke-TtcDefenderAssessment {
                     -FindingId 'DEF-SEC-001' -Workload 'Defender' -Component 'SafeLinks' `
                     -CheckName 'Safe Links Policy Coverage' -Category 'Security' -Severity 'High' `
                     -Status 'Fail' `
-                    -IssueDetected 'No enabled Safe Links rules found and built-in protection is not active — users are not protected by Safe Links.' `
+                    -IssueDetected 'No enabled Safe Links rules found and built-in protection is not active  -  users are not protected by Safe Links.' `
                     -Explanation 'Defender for Office 365 Plan 1+ is licensed but no Safe Links policies are enabled for users. URL rewriting and time-of-click protection against malicious links is not active, leaving users vulnerable to phishing and malware delivery via URL even when the license is present.' `
                     -PossibleSolution 'Enable built-in protection: In the Security portal, go to Email & Collaboration > Policies & Rules > Threat policies > Preset security policies and enable Standard or Strict protection. Or create a custom Safe Links policy covering all users.' `
                     -Impact 'Despite having a Defender license, users receive no URL protection. Phishing links and malware download URLs are not inspected at the time of click. The license investment is not providing its intended protection.' `
@@ -150,7 +150,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-SEC-002 — Safe Attachments Policy Coverage
+    # DEF-SEC-002  -  Safe Attachments Policy Coverage
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -161,7 +161,7 @@ function Invoke-TtcDefenderAssessment {
                 -FindingId 'DEF-SEC-002' -Workload 'Defender' -Component 'SafeAttachments' `
                 -CheckName 'Safe Attachments Policy Coverage' -Category 'Security' -Severity 'High' `
                 -Status 'NotAssessed' `
-                -IssueDetected 'Defender for Office 365 Plan 1+ not available — Safe Attachments check skipped.' `
+                -IssueDetected 'Defender for Office 365 Plan 1+ not available  -  Safe Attachments check skipped.' `
                 -PossibleSolution 'License users for Microsoft Defender for Office 365 Plan 1 or Plan 2.' `
                 -Impact 'Sandbox detonation of suspicious email attachments is not available. Malicious attachments are inspected only by basic anti-malware signature matching.' `
                 -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Data' `
@@ -213,7 +213,7 @@ function Invoke-TtcDefenderAssessment {
                     -FindingId 'DEF-SEC-002' -Workload 'Defender' -Component 'SafeAttachments' `
                     -CheckName 'Safe Attachments Policy Coverage' -Category 'Security' -Severity 'High' `
                     -Status 'Warning' `
-                    -IssueDetected "$enabledRuleCount Safe Attachment rule(s) exist but associated policies have Action=Off — no sandboxing is occurring." `
+                    -IssueDetected "$enabledRuleCount Safe Attachment rule(s) exist but associated policies have Action=Off  -  no sandboxing is occurring." `
                     -Explanation 'Safe Attachment policies with Action=Off are in monitor-only mode; attachments are not scanned in a sandbox before delivery. The rules are enabled but the protection action is disabled, meaning the license investment provides no actual attachment sandboxing.' `
                     -PossibleSolution 'Update policy action: Set-SafeAttachmentPolicy -Identity <PolicyName> -Action Block (recommended) or DynamicDelivery (delivers message while scanning attachment). Review in Security portal: security.microsoft.com > Email & Collaboration > Policies & Rules > Threat policies > Safe Attachments.' `
                     -Impact 'Novel malware in email attachments that evades signature detection is delivered to users without sandbox inspection.' `
@@ -229,7 +229,7 @@ function Invoke-TtcDefenderAssessment {
                     -FindingId 'DEF-SEC-002' -Workload 'Defender' -Component 'SafeAttachments' `
                     -CheckName 'Safe Attachments Policy Coverage' -Category 'Security' -Severity 'High' `
                     -Status 'Fail' `
-                    -IssueDetected 'No enabled Safe Attachment rules found and built-in protection is not active — email attachments are not sandbox-scanned.' `
+                    -IssueDetected 'No enabled Safe Attachment rules found and built-in protection is not active  -  email attachments are not sandbox-scanned.' `
                     -Explanation 'Defender for Office 365 is licensed but Safe Attachments is not active for any users. Email attachments are inspected only by anti-malware signature matching, leaving users vulnerable to novel and zero-day malware in attachments.' `
                     -PossibleSolution 'Enable preset security policies in the Security portal (Standard or Strict protection), or create a Safe Attachments policy and rule covering all users.' `
                     -Impact 'Novel malware in email attachments evades anti-malware signature detection and is delivered to users without sandbox inspection. The Defender license investment does not provide its intended protection.' `
@@ -252,7 +252,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-SEC-003 — Anti-Phishing Policy Configuration
+    # DEF-SEC-003  -  Anti-Phishing Policy Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -265,7 +265,7 @@ function Invoke-TtcDefenderAssessment {
         if ($defaultPolicy) {
             $gaps = [System.Collections.Generic.List[string]]::new()
 
-            # Spoof intelligence — baseline EOP protection (no Defender P1 required)
+            # Spoof intelligence  -  baseline EOP protection (no Defender P1 required)
             if ($defaultPolicy.EnableSpoofIntelligence -ne $true) {
                 $gaps.Add('Spoof intelligence is disabled (EnableSpoofIntelligence = false)')
             }
@@ -319,7 +319,7 @@ function Invoke-TtcDefenderAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'DEF-SEC-003' -Workload 'Defender' -Component 'AntiPhishing' `
                 -CheckName 'Anti-Phishing Policy Configuration' -Category 'Security' -Severity 'High' `
-                -Status 'Error' -IssueDetected 'No anti-phishing policy found — unexpected state in Exchange Online.' `
+                -Status 'Error' -IssueDetected 'No anti-phishing policy found  -  unexpected state in Exchange Online.' `
                 -DataSource 'Get-AntiPhishPolicy'))
         }
     }
@@ -333,7 +333,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-CFG-001 — Preset Security Policy Adoption
+    # DEF-CFG-001  -  Preset Security Policy Adoption
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -408,7 +408,7 @@ function Invoke-TtcDefenderAssessment {
                     -FindingId 'DEF-CFG-001' -Workload 'Defender' -Component 'PresetPolicies' `
                     -CheckName 'Preset Security Policy Adoption' -Category 'Configuration' -Severity 'Medium' `
                     -Status 'Warning' `
-                    -IssueDetected 'No preset security policies (Standard or Strict) are active — all protection relies on manually maintained custom policies.' `
+                    -IssueDetected 'No preset security policies (Standard or Strict) are active  -  all protection relies on manually maintained custom policies.' `
                     -Explanation 'Preset security policies automatically apply Microsoft-recommended configurations for EOP and Defender for Office 365 and are kept current with evolving threats. Without them, custom policies must be manually updated to stay aligned with best practices, which is operationally demanding and prone to drift.' `
                     -PossibleSolution 'Enable Standard or Strict preset policies: security.microsoft.com > Email & Collaboration > Policies & Rules > Threat policies > Preset security policies. Standard protection is suitable for most users. Strict protection is recommended for executives and IT administrators.' `
                     -Impact 'Manual policy configuration may fall out of alignment with Microsoft best practices over time. New threat categories (new phishing techniques, attachment types) may not be protected until manually added to custom policies.' `
@@ -431,7 +431,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-CFG-002 — Zero-Hour Auto Purge (ZAP) Configuration
+    # DEF-CFG-002  -  Zero-Hour Auto Purge (ZAP) Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -464,7 +464,7 @@ function Invoke-TtcDefenderAssessment {
                 -FindingId 'DEF-CFG-002' -Workload 'Defender' -Component 'ZAP' `
                 -CheckName 'Zero-Hour Auto Purge Configuration' -Category 'Configuration' -Severity 'Medium' `
                 -Status 'Pass' `
-                -IssueDetected 'Zero-Hour Auto Purge is enabled for spam and phishing — malicious messages delivered before detection are retroactively removed.' `
+                -IssueDetected 'Zero-Hour Auto Purge is enabled for spam and phishing  -  malicious messages delivered before detection are retroactively removed.' `
                 -Explanation 'ZAP monitors mailboxes after delivery. When a spam or phishing verdict is updated for a previously delivered message, ZAP moves the message to the Junk folder or Quarantine, reducing dwell time for malicious content.' `
                 -DataSource 'Get-HostedContentFilterPolicy;Get-AntiPhishPolicy' `
                 -Notes $notes))
@@ -496,7 +496,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-CFG-003 — Defender for Office 365 SharePoint/Teams/OneDrive Protection
+    # DEF-CFG-003  -  Defender for Office 365 SharePoint/Teams/OneDrive Protection
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -507,7 +507,7 @@ function Invoke-TtcDefenderAssessment {
                 -FindingId 'DEF-CFG-003' -Workload 'Defender' -Component 'SPOTeamsODB' `
                 -CheckName 'Defender for Office 365 SharePoint Teams OneDrive Protection' -Category 'Configuration' -Severity 'High' `
                 -Status 'NotAssessed' `
-                -IssueDetected 'Defender for Office 365 Plan 1+ not available — SharePoint/Teams/OneDrive protection check skipped.' `
+                -IssueDetected 'Defender for Office 365 Plan 1+ not available  -  SharePoint/Teams/OneDrive protection check skipped.' `
                 -PossibleSolution 'License users for Microsoft Defender for Office 365 Plan 1 or Plan 2.' `
                 -Impact 'Malware in files shared via SharePoint, Teams, and OneDrive is not detected by Defender for Office 365 sandbox inspection.' `
                 -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Data' `
@@ -527,7 +527,7 @@ function Invoke-TtcDefenderAssessment {
                 if ($spoProtection -ne $true) {
                     $gaps.Add('Defender for Office 365 protection for SharePoint, Teams, and OneDrive is not enabled (EnableATPForSPOTeamsODB = false)')
                 }
-                # Safe Documents requires E5 or Defender P2 — only flag if explicitly false
+                # Safe Documents requires E5 or Defender P2  -  only flag if explicitly false
                 if ($safeDocsEnabled -eq $false) {
                     $gaps.Add('Safe Documents (opens Office files in Protected View pending cloud scan) is disabled (EnableSafeDocs = false)')
                 }
@@ -578,7 +578,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-MON-001 — High-Severity Alert Policy Notification
+    # DEF-MON-001  -  High-Severity Alert Policy Notification
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -597,7 +597,7 @@ function Invoke-TtcDefenderAssessment {
                 -FindingId 'DEF-MON-001' -Workload 'Defender' -Component 'AlertPolicies' `
                 -CheckName 'High-Severity Alert Policy Notification' -Category 'Monitoring' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'No enabled high-severity alert policies found — this is unexpected. Default Microsoft alert policies may have been disabled.' `
+                -IssueDetected 'No enabled high-severity alert policies found  -  this is unexpected. Default Microsoft alert policies may have been disabled.' `
                 -Explanation 'Microsoft creates default high-severity alert policies covering critical events such as mass file downloads, email forwarding rule creation, eDiscovery searches, and admin privilege escalation. If none are enabled, critical security events will not trigger notifications.' `
                 -PossibleSolution 'Review alert policies in the Purview compliance portal: compliance.microsoft.com > Policies > Alert policies. Re-enable default Microsoft alert policies. Confirm notification recipients are configured.' `
                 -DataSource 'Get-AlertPolicy' `
@@ -639,7 +639,7 @@ function Invoke-TtcDefenderAssessment {
     }
 
     # =========================================================================
-    # DEF-MON-002 — Compromised Account Alert Policies
+    # DEF-MON-002  -  Compromised Account Alert Policies
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -665,7 +665,7 @@ function Invoke-TtcDefenderAssessment {
         foreach ($policyName in $targetPolicies) {
             $match = $allAlertPolicies | Where-Object { $_.Name -like "*$policyName*" } | Select-Object -First 1
             if (-not $match) {
-                $missingOrDisabled.Add("$policyName (not found — may have been removed)")
+                $missingOrDisabled.Add("$policyName (not found  -  may have been removed)")
             }
             elseif ($match.IsEnabled -ne $true) {
                 $missingOrDisabled.Add("$policyName (DISABLED)")
@@ -736,6 +736,6 @@ function Invoke-TtcDefenderAssessment {
             -DataSource 'Get-AlertPolicy' -Notes $_.Exception.Message))
     }
 
-    Write-TtcLog -Level Info -Message "Defender for Office 365 assessment complete — $($findings.Count) finding(s) generated"
+    Write-TtcLog -Level Info -Message "Defender for Office 365 assessment complete  -  $($findings.Count) finding(s) generated"
     return $findings.ToArray()
 }

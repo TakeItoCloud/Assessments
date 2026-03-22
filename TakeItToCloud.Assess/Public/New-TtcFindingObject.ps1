@@ -76,6 +76,8 @@ function New-TtcFindingObject {
         [ValidateSet('P1', 'P2', 'P3', 'P4')]
         [string]$RemediationPriority = 'P3',
 
+        [string]$MitreAttack = '',
+
         [string]$Notes = ''
     )
 

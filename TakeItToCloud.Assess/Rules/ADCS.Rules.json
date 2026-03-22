@@ -1,0 +1,62 @@
+{
+  "Workload": "ActiveDirectory",
+  "Version": "1.0",
+  "Description": "Active Directory Certificate Services ESC vulnerability assessment rules",
+  "Rules": [
+    {
+      "FindingId": "ADCS-SEC-001",
+      "CheckName": "ESC1 - Enrollee Supplies Subject SAN",
+      "Category": "Security",
+      "DefaultSeverity": "Critical",
+      "Description": "Detects certificate templates with CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT flag and Client Auth EKU (Certified Pre-Owned ESC1).",
+      "FrameworkMapping": "NIST-Protect",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1649",
+      "Reference": "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+    },
+    {
+      "FindingId": "ADCS-SEC-002",
+      "CheckName": "ESC2 - Any Purpose or No EKU Templates",
+      "Category": "Security",
+      "DefaultSeverity": "High",
+      "Description": "Detects certificate templates with Any Purpose EKU or no EKU restriction without manager approval (ESC2).",
+      "FrameworkMapping": "NIST-Protect",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1649",
+      "Reference": "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+    },
+    {
+      "FindingId": "ADCS-SEC-003",
+      "CheckName": "ESC3 - Certificate Request Agent Templates",
+      "Category": "Security",
+      "DefaultSeverity": "High",
+      "Description": "Detects templates with Certificate Request Agent EKU enabling enrollment on behalf of other users (ESC3).",
+      "FrameworkMapping": "NIST-Protect",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1649",
+      "Reference": "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+    },
+    {
+      "FindingId": "ADCS-SEC-004",
+      "CheckName": "ESC6 - EDITF_ATTRIBUTESUBJECTALTNAME2 CA Flag",
+      "Category": "Security",
+      "DefaultSeverity": "Critical",
+      "Description": "Detects CAs with EDITF_ATTRIBUTESUBJECTALTNAME2 flag enabling attacker-controlled SANs on any template (ESC6).",
+      "FrameworkMapping": "NIST-Protect",
+      "ZeroTrustPillar": "Identity",
+      "MitreAttack": "T1649",
+      "Reference": "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+    },
+    {
+      "FindingId": "ADCS-SEC-005",
+      "CheckName": "ESC8 - HTTP Certificate Web Enrollment Endpoint",
+      "Category": "Security",
+      "DefaultSeverity": "Critical",
+      "Description": "Detects CA web enrollment endpoints accessible over HTTP, enabling NTLM relay certificate attacks (ESC8).",
+      "FrameworkMapping": "NIST-Protect",
+      "ZeroTrustPillar": "Infrastructure",
+      "MitreAttack": "T1187",
+      "Reference": "https://posts.specterops.io/certified-pre-owned-d95910965cd2"
+    }
+  ]
+}

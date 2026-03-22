@@ -6,7 +6,10 @@
         "HybridIdentity",
         "ExchangeOnline",
         "Defender",
-        "Collaboration"
+        "Collaboration",
+        "MDE",
+        "PIM",
+        "ADCS"
     ],
     "ExcludeWorkloads": [],
     "ExcludeChecks": [],

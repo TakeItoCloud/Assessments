@@ -61,7 +61,7 @@ AfterAll {
 }
 
 # =============================================================================
-# New-TtcFinding — internal finding factory
+# New-TtcFinding  -  internal finding factory
 # =============================================================================
 Describe 'New-TtcFinding (internal factory)' {
 
@@ -149,12 +149,12 @@ Describe 'New-TtcFinding (internal factory)' {
 }
 
 # =============================================================================
-# Get-TtcAssessmentScore — scoring engine
+# Get-TtcAssessmentScore  -  scoring engine
 # =============================================================================
 Describe 'Get-TtcAssessmentScore' {
 
     BeforeAll {
-        # Known inputs — produces deterministic scores:
+        # Known inputs  -  produces deterministic scores:
         #   Security: 100 - 7 (High Fail) - 10 (Critical Fail) = 83
         #   Health:   100 - (4 × 0.5) = 98  (Medium Warning)
         #   Governance: 100 (no governance findings)
@@ -238,7 +238,7 @@ Describe 'Get-TtcAssessmentScore' {
 }
 
 # =============================================================================
-# Invoke-TtcAutoFix — remediation script generator
+# Invoke-TtcAutoFix  -  remediation script generator
 # =============================================================================
 Describe 'Invoke-TtcAutoFix' {
 
@@ -311,7 +311,7 @@ Describe 'Invoke-TtcAutoFix' {
 }
 
 # =============================================================================
-# Test-TtcPrerequisite — module prerequisite checker
+# Test-TtcPrerequisite  -  module prerequisite checker
 # =============================================================================
 Describe 'Test-TtcPrerequisite' {
 

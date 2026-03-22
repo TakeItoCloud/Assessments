@@ -112,7 +112,7 @@ $findings = @(
     New-TtcFindingObject -FindingId "HYB-HLT-001" -Workload "HybridIdentity" -Component "Entra Connect" `
         -CheckName "Entra Connect Sync Health" `
         -Category "Health" -Severity "Low" -Status "Pass" `
-        -IssueDetected "Entra Connect sync is healthy — last sync completed 12 minutes ago" `
+        -IssueDetected "Entra Connect sync is healthy  -  last sync completed 12 minutes ago" `
         -Explanation "Directory synchronization is operating within expected intervals." `
         -PossibleSolution "No action required. Continue monitoring sync health via Entra Connect Health." `
         -FrameworkMapping "NIST-Identify" -ZeroTrustPillar "Identity" `

@@ -1,0 +1,67 @@
+{
+  "Workload": "Defender",
+  "Version": "1.0",
+  "Description": "Microsoft Defender for Endpoint assessment rules",
+  "Rules": [
+    {
+      "FindingId": "MDE-CFG-001",
+      "CheckName": "MDE Device Onboarding Coverage",
+      "Category": "Security",
+      "DefaultSeverity": "High",
+      "Description": "Verifies that managed devices are visible and enrolled in Intune for MDE onboarding assessment.",
+      "FrameworkMapping": "CIS-EndpointProtection",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": ""
+    },
+    {
+      "FindingId": "MDE-SEC-001",
+      "CheckName": "Secure Score - Device Controls",
+      "Category": "Security",
+      "DefaultSeverity": "High",
+      "Description": "Evaluates Microsoft Secure Score for device security control categories.",
+      "FrameworkMapping": "CIS-EndpointProtection",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": ""
+    },
+    {
+      "FindingId": "MDE-SEC-002",
+      "CheckName": "Unresolved High-Severity Security Alerts",
+      "Category": "Security",
+      "DefaultSeverity": "High",
+      "Description": "Identifies unresolved high and critical severity alerts in Microsoft 365 Defender.",
+      "FrameworkMapping": "NIST-Respond",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": "T1562"
+    },
+    {
+      "FindingId": "MDE-CFG-002",
+      "CheckName": "Device Compliance Policy Coverage",
+      "Category": "Configuration",
+      "DefaultSeverity": "High",
+      "Description": "Checks that Intune device compliance policies exist and cover Windows devices.",
+      "FrameworkMapping": "CIS-EndpointProtection",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": ""
+    },
+    {
+      "FindingId": "MDE-CFG-003",
+      "CheckName": "Non-Compliant Device Count",
+      "Category": "Compliance",
+      "DefaultSeverity": "Medium",
+      "Description": "Counts devices that are non-compliant with Intune compliance policies.",
+      "FrameworkMapping": "CIS-EndpointProtection",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": ""
+    },
+    {
+      "FindingId": "MDE-MON-001",
+      "CheckName": "Defender Device Security Improvement Actions",
+      "Category": "Monitoring",
+      "DefaultSeverity": "Medium",
+      "Description": "Lists unimplemented Secure Score improvement actions for device security controls.",
+      "FrameworkMapping": "NIST-Identify",
+      "ZeroTrustPillar": "Devices",
+      "MitreAttack": ""
+    }
+  ]
+}

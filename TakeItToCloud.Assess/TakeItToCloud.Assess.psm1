@@ -56,14 +56,27 @@ if (Test-Path -Path $PublicPath) {
 }
 
 # --- Set module-level variables ---
-$script:TtcModuleRoot = $ModuleRoot
-$script:TtcLogPath    = Join-Path -Path $ModuleRoot -ChildPath 'Logs'
-$script:TtcRulesPath  = Join-Path -Path $ModuleRoot -ChildPath 'Rules'
-$script:TtcConfigPath = Join-Path -Path $ModuleRoot -ChildPath 'Config'
+$script:TtcModuleRoot     = $ModuleRoot
+$script:TtcLogPath        = Join-Path -Path $ModuleRoot -ChildPath 'Logs'
+$script:TtcRulesPath      = Join-Path -Path $ModuleRoot -ChildPath 'Rules'
+$script:TtcConfigPath     = Join-Path -Path $ModuleRoot -ChildPath 'Config'
+$script:TtcConsoleLogging = $false  # Set to $true or call Enable-TtcConsoleLogging
+$script:TtcSessionId      = [System.Guid]::NewGuid().ToString('N').Substring(0, 8)  # Short session ID for log correlation
 
 # Ensure Logs directory exists
 if (-not (Test-Path -Path $script:TtcLogPath)) {
     New-Item -Path $script:TtcLogPath -ItemType Directory -Force | Out-Null
 }
 
-Write-Verbose "TakeItToCloud.Assess module loaded from $ModuleRoot"
+# Write session start banner to log file
+$sessionBanner = "=" * 80
+$sessionInfo   = "[$([datetime]::Now.ToString('yyyy-MM-dd HH:mm:ss'))] [INFO] [$($script:TtcSessionId)] === TakeItToCloud.Assess v1.1.0 session started | User: $env:USERNAME | Host: $env:COMPUTERNAME | PS: $($PSVersionTable.PSVersion) ==="
+try {
+    $logFile = Join-Path -Path $script:TtcLogPath -ChildPath "TtcAssess_$(Get-Date -Format 'yyyyMMdd').log"
+    Add-Content -Path $logFile -Value $sessionBanner    -Encoding UTF8
+    Add-Content -Path $logFile -Value $sessionInfo      -Encoding UTF8
+    Add-Content -Path $logFile -Value $sessionBanner    -Encoding UTF8
+}
+catch { }
+
+Write-Verbose "TakeItToCloud.Assess module loaded from $ModuleRoot (Session: $($script:TtcSessionId))"

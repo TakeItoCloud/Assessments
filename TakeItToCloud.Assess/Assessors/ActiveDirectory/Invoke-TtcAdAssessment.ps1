@@ -53,7 +53,7 @@ function Invoke-TtcAdAssessment {
     try {
         $ErrorActionPreference = 'Stop'
         if (-not (Get-Module -Name ActiveDirectory -ListAvailable)) {
-            Write-TtcLog -Level Warning -Message "ActiveDirectory module not available — returning NotAssessed"
+            Write-TtcLog -Level Warning -Message "ActiveDirectory module not available  -  returning NotAssessed"
             $findings.Add((New-TtcFinding `
                 -FindingId 'AD-HLT-001' -Workload 'ActiveDirectory' -Component 'Prerequisites' `
                 -CheckName 'Domain Controller Replication Health' -Category 'Health' -Severity 'High' `
@@ -102,7 +102,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-HLT-001 — DC Replication Health
+    # AD-HLT-001  -  DC Replication Health
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -147,7 +147,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-HLT-002 — DC Redundancy + AD-HLT-003 — DC OS Version
+    # AD-HLT-002  -  DC Redundancy + AD-HLT-003  -  DC OS Version
     # =========================================================================
     $allDcs = $null
     try {
@@ -163,7 +163,7 @@ function Invoke-TtcAdAssessment {
                 -FindingId 'AD-HLT-002' -Workload 'ActiveDirectory' -Component 'DomainControllers' `
                 -CheckName 'Domain Controller Redundancy' -Category 'Resilience' -Severity 'Critical' `
                 -Status 'Fail' `
-                -IssueDetected "Only $dcCount domain controller(s) found — single point of failure." `
+                -IssueDetected "Only $dcCount domain controller(s) found  -  single point of failure." `
                 -Explanation 'A domain with one DC is a catastrophic single point of failure. If the DC fails or is rebooted for patching, all Kerberos authentication, LDAP queries, Group Policy, and DNS resolution for AD-joined systems fails.' `
                 -PossibleSolution 'Deploy a minimum of two domain controllers in separate physical locations or Azure availability zones. Consider an Azure IaaS domain controller or Azure AD DS as an off-site hot standby.' `
                 -Impact 'Complete authentication outage if the single DC becomes unavailable. No AD writes, no GP updates, DNS failures for AD-integrated zones.' `
@@ -178,7 +178,7 @@ function Invoke-TtcAdAssessment {
                 -FindingId 'AD-HLT-002' -Workload 'ActiveDirectory' -Component 'DomainControllers' `
                 -CheckName 'Domain Controller Redundancy' -Category 'Resilience' -Severity 'Low' `
                 -Status 'Warning' `
-                -IssueDetected 'Two domain controllers detected — minimum redundancy met but no buffer for maintenance.' `
+                -IssueDetected 'Two domain controllers detected  -  minimum redundancy met but no buffer for maintenance.' `
                 -Explanation 'With two DCs, patching or planned downtime of one leaves the environment running on a single DC, creating a temporary single point of failure. This is especially risky during patch windows.' `
                 -PossibleSolution 'Consider promoting a third DC to maintain redundancy during maintenance windows. Stagger patching schedules to ensure at least two DCs are online at all times.' `
                 -Impact 'During maintenance of either DC, authentication redundancy is temporarily lost.' `
@@ -191,12 +191,12 @@ function Invoke-TtcAdAssessment {
                 -FindingId 'AD-HLT-002' -Workload 'ActiveDirectory' -Component 'DomainControllers' `
                 -CheckName 'Domain Controller Redundancy' -Category 'Resilience' -Severity 'Low' `
                 -Status 'Pass' `
-                -IssueDetected "$dcCount domain controllers detected — adequate redundancy." `
+                -IssueDetected "$dcCount domain controllers detected  -  adequate redundancy." `
                 -DataSource 'Get-ADDomainController' `
                 -Notes "DCs: $dcNames"))
         }
 
-        # AD-HLT-003 — OS Version (within same try block to reuse $allDcs)
+        # AD-HLT-003  -  OS Version (within same try block to reuse $allDcs)
         $eolDcs = $allDcs | Where-Object { $_.OperatingSystem -match '2003|2008|2012' }
         $eolCount = ($eolDcs | Measure-Object).Count
 
@@ -237,7 +237,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-HLT-004 — FSMO Role Holder Accessibility
+    # AD-HLT-004  -  FSMO Role Holder Accessibility
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -271,7 +271,7 @@ function Invoke-TtcAdAssessment {
                 -Impact 'Password changes may fail (PDC). New object creation blocked (RID). Cross-domain group references broken (Infrastructure Master). Schema and domain additions blocked (forest roles).' `
                 -FrameworkMapping 'NIST-Identify' -ZeroTrustPillar 'Infrastructure' `
                 -DataSource 'Get-ADDomain;Get-ADForest;Test-NetConnection' `
-                -Remediation 'Test-NetConnection -ComputerName <FSMOHolder> -Port 389. For permanently offline DC: ntdsutil "roles" "connections" "connect to server <workingDC>" "seize <role name>" quit quit. Use with extreme caution — seizing should only occur if the original FSMO holder is permanently lost.' `
+                -Remediation 'Test-NetConnection -ComputerName <FSMOHolder> -Port 389. For permanently offline DC: ntdsutil "roles" "connections" "connect to server <workingDC>" "seize <role name>" quit quit. Use with extreme caution  -  seizing should only occur if the original FSMO holder is permanently lost.' `
                 -AutoFixAvailable 'No' -RemediationPriority 'P1' `
                 -Notes ($unreachable -join '; ')))
         }
@@ -296,7 +296,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-SEC-001 — Stale Privileged Group Members
+    # AD-SEC-001  -  Stale Privileged Group Members
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -321,14 +321,14 @@ function Invoke-TtcAdAssessment {
                         $user = Get-ADUser -Identity $member.SamAccountName `
                             -Properties LastLogonDate, Enabled -Server $domain.DNSRoot -ErrorAction Stop
                         if ($user.Enabled -eq $false) {
-                            $staleMembers.Add("[$groupName] $($member.SamAccountName) — DISABLED")
+                            $staleMembers.Add("[$groupName] $($member.SamAccountName) - DISABLED")
                         }
                         elseif (-not $user.LastLogonDate) {
-                            $staleMembers.Add("[$groupName] $($member.SamAccountName) — NEVER LOGGED IN")
+                            $staleMembers.Add("[$groupName] $($member.SamAccountName) - NEVER LOGGED IN")
                         }
                         elseif ($user.LastLogonDate -lt $staleThreshold) {
                             $days = [int]((Get-Date) - $user.LastLogonDate).TotalDays
-                            $staleMembers.Add("[$groupName] $($member.SamAccountName) — last logon ${days}d ago")
+                            $staleMembers.Add("[$groupName] $($member.SamAccountName) - last logon ${days}d ago")
                         }
                     }
                     catch {
@@ -377,7 +377,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-SEC-002 — Default Administrator Account Hygiene
+    # AD-SEC-002  -  Default Administrator Account Hygiene
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -431,13 +431,13 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-SEC-003 — Unconstrained Kerberos Delegation
+    # AD-SEC-003  -  Unconstrained Kerberos Delegation
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
         Write-TtcLog -Level Info -Message "AD-SEC-003: Checking unconstrained Kerberos delegation"
 
-        # DCs always have unconstrained delegation by design — exclude them
+        # DCs always have unconstrained delegation by design  -  exclude them
         $dcDNS = if ($allDcs) {
             $allDcs | Select-Object -ExpandProperty Name
         }
@@ -494,7 +494,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-SEC-004 — Krbtgt Account Password Age
+    # AD-SEC-004  -  Krbtgt Account Password Age
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -527,7 +527,7 @@ function Invoke-TtcAdAssessment {
                 -FindingId 'AD-SEC-004' -Workload 'ActiveDirectory' -Component 'Kerberos' `
                 -CheckName 'Krbtgt Account Password Age' -Category 'Security' -Severity 'High' `
                 -Status 'Pass' `
-                -IssueDetected "Krbtgt password is $krbtgtAge days old — within the $KrbtgtPasswordAgeDays-day threshold." `
+                -IssueDetected "Krbtgt password is $krbtgtAge days old  -  within the $KrbtgtPasswordAgeDays-day threshold." `
                 -DataSource 'Get-ADUser' `
                 -Notes "PasswordLastSet: $ageSource"))
         }
@@ -542,7 +542,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-SEC-005 — Protected Users Security Group Coverage
+    # AD-SEC-005  -  Protected Users Security Group Coverage
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -592,7 +592,7 @@ function Invoke-TtcAdAssessment {
                     -Status 'Warning' `
                     -IssueDetected "$notProtectedCount privileged user(s) are not members of the Protected Users group." `
                     -Explanation 'Privileged accounts outside of Protected Users can have credentials cached via NTLM, are susceptible to NTLM relay, and can be abused via delegation. Protected Users prevents all of these attack vectors for the accounts it covers.' `
-                    -PossibleSolution 'Add all Domain, Enterprise, and Schema Admins to Protected Users. Test in a lab environment first — Protected Users disables NTLM which may break applications or services that authenticate with these accounts.' `
+                    -PossibleSolution 'Add all Domain, Enterprise, and Schema Admins to Protected Users. Test in a lab environment first  -  Protected Users disables NTLM which may break applications or services that authenticate with these accounts.' `
                     -Impact 'Privileged accounts not in Protected Users remain vulnerable to pass-the-hash, NTLM relay, and unconstrained delegation abuse.' `
                     -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
                     -DataSource 'Get-ADGroupMember' `
@@ -620,7 +620,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-CFG-001 — Default Domain Password Policy
+    # AD-CFG-001  -  Default Domain Password Policy
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -651,7 +651,7 @@ function Invoke-TtcAdAssessment {
             $policyIssues.Add("LockoutThreshold is $($passwordPolicy.LockoutThreshold) (recommend 5 or less)")
         }
         if ($passwordPolicy.ReversibleEncryptionEnabled) {
-            $policyIssues.Add('CRITICAL: Reversible encryption is ENABLED — passwords stored in plaintext-equivalent')
+            $policyIssues.Add('CRITICAL: Reversible encryption is ENABLED  -  passwords stored in plaintext-equivalent')
         }
 
         if ($policyIssues.Count -gt 0) {
@@ -694,7 +694,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-CFG-002 — Fine-Grained Password Policies
+    # AD-CFG-002  -  Fine-Grained Password Policies
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -740,7 +740,7 @@ function Invoke-TtcAdAssessment {
     }
 
     # =========================================================================
-    # AD-MON-001 — Advanced Audit Policy Configuration
+    # AD-MON-001  -  Advanced Audit Policy Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -754,7 +754,7 @@ function Invoke-TtcAdAssessment {
                 -FindingId 'AD-MON-001' -Workload 'ActiveDirectory' -Component 'AuditPolicy' `
                 -CheckName 'Advanced Audit Policy Configuration' -Category 'Monitoring' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'Could not retrieve audit policy via auditpol — manual review required.' `
+                -IssueDetected 'Could not retrieve audit policy via auditpol  -  manual review required.' `
                 -Explanation 'Advanced Audit Policy configuration is critical for detecting attacks in Active Directory. Without proper auditing, Kerberos ticket anomalies, privilege escalation, LDAP enumeration, and directory changes go undetected.' `
                 -PossibleSolution 'Run: auditpol /get /category:* on a domain controller and review against the CIS AD benchmark. Configure via Group Policy on the Default Domain Controllers Policy.' `
                 -DataSource 'auditpol' -FrameworkMapping 'NIST-Detect' -ZeroTrustPillar 'Infrastructure' `
@@ -836,6 +836,383 @@ function Invoke-TtcAdAssessment {
             -DataSource 'auditpol' -Notes $_.Exception.Message))
     }
 
-    Write-TtcLog -Level Info -Message "Active Directory assessment complete — $($findings.Count) finding(s) generated"
+    # =========================================================================
+    # AD-SEC-006  -  Kerberoastable Accounts (SPNs on user accounts)
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-SEC-006: Checking for Kerberoastable user accounts"
+
+        $kerberoastable = Get-ADUser -Filter { ServicePrincipalName -ne '$null' } `
+            -Properties ServicePrincipalName, PasswordLastSet, Enabled `
+            -Server $domain.DNSRoot |
+            Where-Object { $_.Enabled -eq $true -and $_.SamAccountName -ne 'krbtgt' }
+
+        $kCount = ($kerberoastable | Measure-Object).Count
+
+        if ($kCount -gt 0) {
+            $details = $kerberoastable | ForEach-Object {
+                "$($_.SamAccountName) (SPNs: $($_.ServicePrincipalName -join ','))"
+            }
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-006' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+                -CheckName 'Kerberoastable User Accounts' -Category 'Security' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "$kCount enabled user account(s) have Service Principal Names and are vulnerable to Kerberoasting." `
+                -Explanation 'Any authenticated domain user can request a Kerberos service ticket (TGS) for any SPN. The ticket is encrypted with the service account password hash and can be cracked offline. Weak passwords on service accounts are often cracked within minutes.' `
+                -PossibleSolution 'Use Group Managed Service Accounts (gMSA) for all services - gMSA passwords are 240-character random strings that auto-rotate. For accounts that cannot use gMSA, set 30+ character random passwords and enable AES256 encryption: Set-ADUser -KerberosEncryptionType AES256.' `
+                -Impact 'An attacker with any domain credentials can extract and offline-crack service account password hashes, potentially gaining privileged access if service accounts have elevated rights.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
+                -MitreAttack 'T1558.003' `
+                -DataSource 'Get-ADUser' `
+                -Remediation 'New-ADServiceAccount -Name <gMSA-Name> -DNSHostName <host.domain> -PrincipalsAllowedToRetrieveManagedPassword <servers>. Install-ADServiceAccount on target servers. For legacy: Set-ADUser -Identity <user> -KerberosEncryptionType AES256.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes ($details -join '; ')))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-006' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+                -CheckName 'Kerberoastable User Accounts' -Category 'Security' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected 'No enabled user accounts with Service Principal Names found (excluding krbtgt).' `
+                -MitreAttack 'T1558.003' -DataSource 'Get-ADUser'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-SEC-006: Kerberoasting check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-SEC-006' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+            -CheckName 'Kerberoastable User Accounts' -Category 'Security' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-ADUser' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-SEC-007  -  AS-REP Roastable Accounts (Pre-Auth Disabled)
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-SEC-007: Checking for AS-REP roastable accounts"
+
+        $asrepRoastable = Get-ADUser -Filter { DoesNotRequirePreAuth -eq $true -and Enabled -eq $true } `
+            -Properties DoesNotRequirePreAuth, PasswordLastSet `
+            -Server $domain.DNSRoot
+
+        $arCount = ($asrepRoastable | Measure-Object).Count
+
+        if ($arCount -gt 0) {
+            $details = ($asrepRoastable | Select-Object -ExpandProperty SamAccountName) -join '; '
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-007' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+                -CheckName 'AS-REP Roastable Accounts (Pre-Authentication Disabled)' -Category 'Security' -Severity 'Critical' `
+                -Status 'Fail' `
+                -IssueDetected "$arCount account(s) have Kerberos pre-authentication disabled and are vulnerable to AS-REP roasting." `
+                -Explanation 'Accounts with pre-authentication disabled allow any unauthenticated attacker to request an AS-REP ticket from the KDC. The encrypted portion of the response contains material derivable from the account password and can be cracked offline without any domain credentials.' `
+                -PossibleSolution 'Enable pre-authentication on all accounts: Set-ADUser -Identity <user> -DoesNotRequirePreAuth $false. This setting is almost never legitimately required. If an application requires it, isolate that account, apply a 30+ character random password, and monitor closely.' `
+                -Impact 'An unauthenticated attacker on the network can extract crackable hash material for affected accounts without providing any credentials.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
+                -MitreAttack 'T1558.004' `
+                -DataSource 'Get-ADUser' `
+                -Remediation 'Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} | Set-ADUser -DoesNotRequirePreAuth $false' `
+                -AutoFixAvailable 'Yes' -RemediationPriority 'P1' `
+                -Notes $details))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-007' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+                -CheckName 'AS-REP Roastable Accounts (Pre-Authentication Disabled)' -Category 'Security' -Severity 'Critical' `
+                -Status 'Pass' `
+                -IssueDetected 'All enabled accounts require Kerberos pre-authentication.' `
+                -MitreAttack 'T1558.004' -DataSource 'Get-ADUser'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-SEC-007: AS-REP roast check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-SEC-007' -Workload 'ActiveDirectory' -Component 'Kerberos' `
+            -CheckName 'AS-REP Roastable Accounts (Pre-Authentication Disabled)' -Category 'Security' -Severity 'Critical' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-ADUser' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-SEC-008  -  DCSync Rights (Non-DC Replication ACEs)
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-SEC-008: Checking for unauthorized DCSync rights"
+
+        # DS-Replication-Get-Changes-All GUID
+        $dsrGuid = [GUID]'1131f6ad-9c07-11d1-f79f-00c04fc2dcd2'
+
+        $domainDN  = $domain.DistinguishedName
+        $domainPath = "AD:\$domainDN"
+        $acl        = Get-Acl -Path $domainPath -ErrorAction Stop
+
+        # Collect well-known admin/system SIDs to exclude
+        $excludedSids = @(
+            'S-1-5-18',   # SYSTEM
+            'S-1-5-9',    # Enterprise Domain Controllers
+            "$($domain.DomainSID)-516",  # Domain Controllers group
+            "$($domain.DomainSID)-519",  # Enterprise Admins
+            "$($domain.DomainSID)-512",  # Domain Admins
+            'S-1-5-32-544'               # Builtin\Administrators
+        )
+
+        $suspectAces = $acl.Access | Where-Object {
+            $_.ObjectType -eq $dsrGuid -and
+            $_.AccessControlType -eq 'Allow' -and
+            $_.IdentityReference.ToString() -notmatch 'NT AUTHORITY' -and
+            $_.IdentityReference.ToString() -notmatch 'BUILTIN'
+        }
+
+        # Resolve SIDs to exclude domain controllers and admin groups
+        $suspectFiltered = $suspectAces | Where-Object {
+            try {
+                $sid = New-Object System.Security.Principal.NTAccount($_.IdentityReference.ToString())
+                $sidStr = $sid.Translate([System.Security.Principal.SecurityIdentifier]).Value
+                $sidStr -notin $excludedSids
+            }
+            catch { $true }
+        }
+
+        $dcsyncCount = ($suspectFiltered | Measure-Object).Count
+
+        if ($dcsyncCount -gt 0) {
+            $details = ($suspectFiltered | Select-Object -ExpandProperty IdentityReference) -join '; '
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-008' -Workload 'ActiveDirectory' -Component 'Replication' `
+                -CheckName 'Unauthorized DCSync Rights on Domain NC' -Category 'Security' -Severity 'Critical' `
+                -Status 'Fail' `
+                -IssueDetected "$dcsyncCount non-default principal(s) have DS-Replication-Get-Changes-All rights on the domain." `
+                -Explanation 'The DS-Replication-Get-Changes-All extended right allows any principal to replicate all domain secrets including password hashes via DCSync. This is the mechanism used by Mimikatz dcsync. Only Domain Controllers should hold this right.' `
+                -PossibleSolution 'Audit each principal. Remove the ACE via ADSI or PowerShell ADSI: $acl = Get-Acl "AD:\<DomainDN>"; $acl.RemoveAccessRule($ace); Set-Acl "AD:\<DomainDN>" $acl. Investigate whether the account was used for malicious replication.' `
+                -Impact 'Any principal with this right can silently dump all Active Directory password hashes, effectively compromising every account in the domain including Domain Admins and krbtgt.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
+                -MitreAttack 'T1003.006' `
+                -DataSource 'Get-Acl;AD DS ACL' `
+                -Remediation 'Remove-ADReplicationSiteLinkBridge is not applicable here. Use ADSI to remove the ACE: $acl = Get-Acl "AD:\DC=domain,DC=com"; $rule = $acl.Access | Where-Object {$_.IdentityReference -eq "<principal>"}; $acl.RemoveAccessRule($rule); Set-Acl "AD:\DC=domain,DC=com" $acl' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P1' `
+                -Notes $details))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-008' -Workload 'ActiveDirectory' -Component 'Replication' `
+                -CheckName 'Unauthorized DCSync Rights on Domain NC' -Category 'Security' -Severity 'Critical' `
+                -Status 'Pass' `
+                -IssueDetected 'No non-default principals found with DS-Replication-Get-Changes-All rights.' `
+                -MitreAttack 'T1003.006' -DataSource 'Get-Acl;AD DS ACL'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-SEC-008: DCSync rights check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-SEC-008' -Workload 'ActiveDirectory' -Component 'Replication' `
+            -CheckName 'Unauthorized DCSync Rights on Domain NC' -Category 'Security' -Severity 'Critical' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-Acl' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-SEC-009  -  AdminSDHolder Divergence
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-SEC-009: Checking AdminSDHolder for rogue ACEs"
+
+        $adminSDHolderDN = "CN=AdminSDHolder,CN=System,$($domain.DistinguishedName)"
+        $sdAcl = Get-Acl -Path "AD:\$adminSDHolderDN" -ErrorAction Stop
+
+        # Flag any Allow ACE for accounts that are not built-in admin groups
+        $suspectAces = $sdAcl.Access | Where-Object {
+            $_.AccessControlType -eq 'Allow' -and
+            $_.ActiveDirectoryRights -match 'Write|GenericAll|GenericWrite|WriteDacl|WriteOwner' -and
+            $_.IdentityReference.ToString() -notmatch 'NT AUTHORITY|BUILTIN|Domain Admins|Enterprise Admins|Administrators|Schema Admins|CREATOR OWNER'
+        }
+
+        $sdCount = ($suspectAces | Measure-Object).Count
+
+        if ($sdCount -gt 0) {
+            $details = ($suspectAces | ForEach-Object { "$($_.IdentityReference) - $($_.ActiveDirectoryRights)" }) -join '; '
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-009' -Workload 'ActiveDirectory' -Component 'ACLs' `
+                -CheckName 'AdminSDHolder Rogue ACEs' -Category 'Security' -Severity 'Critical' `
+                -Status 'Fail' `
+                -IssueDetected "$sdCount unexpected Write/Full-Control ACE(s) found on the AdminSDHolder object." `
+                -Explanation 'The AdminSDHolder ACL is propagated to all protected AD objects every 60 minutes by the SDProp process. A rogue Write ACE on AdminSDHolder grants persistent, SDProp-reinstated write access to every privileged account in the domain, surviving most cleanup attempts.' `
+                -PossibleSolution 'Remove unexpected ACEs from AdminSDHolder immediately. Investigate when and how they were added (AD audit logs, event ID 5136). Treat any rogue ACE as an Active Directory backdoor.' `
+                -Impact 'An attacker who placed a rogue ACE on AdminSDHolder retains persistent write access to all Domain Admins, Enterprise Admins, and other protected accounts, reinstated every 60 minutes by SDProp.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
+                -MitreAttack 'T1484.001' `
+                -DataSource 'Get-Acl;AdminSDHolder' `
+                -Remediation 'Remove the ACE via: $acl = Get-Acl "AD:\CN=AdminSDHolder,CN=System,<DomainDN>"; $ace = $acl.Access | Where-Object {$_.IdentityReference -eq "<suspect>"}; $acl.RemoveAccessRule($ace); Set-Acl "AD:\CN=AdminSDHolder,CN=System,<DomainDN>" $acl' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P1' `
+                -Notes $details))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-SEC-009' -Workload 'ActiveDirectory' -Component 'ACLs' `
+                -CheckName 'AdminSDHolder Rogue ACEs' -Category 'Security' -Severity 'Critical' `
+                -Status 'Pass' `
+                -IssueDetected 'AdminSDHolder ACL contains no unexpected Write/Full-Control principals.' `
+                -MitreAttack 'T1484.001' -DataSource 'Get-Acl;AdminSDHolder'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-SEC-009: AdminSDHolder check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-SEC-009' -Workload 'ActiveDirectory' -Component 'ACLs' `
+            -CheckName 'AdminSDHolder Rogue ACEs' -Category 'Security' -Severity 'Critical' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-Acl' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-CFG-003  -  msDS-MachineAccountQuota
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-CFG-003: Checking msDS-MachineAccountQuota"
+
+        $quota = (Get-ADDomain -Server $domain.DNSRoot).MachineAccountQuota
+        if ($null -eq $quota) {
+            $domainObj = Get-ADObject -Identity $domain.DistinguishedName `
+                -Properties 'ms-DS-MachineAccountQuota' -Server $domain.DNSRoot
+            $quota = $domainObj.'ms-DS-MachineAccountQuota'
+        }
+
+        if ($quota -gt 0) {
+            $severity = if ($quota -ge 10) { 'High' } else { 'Medium' }
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-003' -Workload 'ActiveDirectory' -Component 'Domain' `
+                -CheckName 'Machine Account Quota (msDS-MachineAccountQuota)' -Category 'Configuration' -Severity $severity `
+                -Status 'Fail' `
+                -IssueDetected "msDS-MachineAccountQuota is $quota (default=10). Any authenticated domain user can join up to $quota computers." `
+                -Explanation 'The default quota of 10 allows any domain user to join computers to the domain and set their own SPNs. This enables Resource-Based Constrained Delegation (RBCD) attacks: an attacker creates a fake computer, sets its SPN, then abuses RBCD to impersonate any user to any service on a vulnerable host.' `
+                -PossibleSolution 'Set the quota to 0 to prevent non-admin computer joins. Dedicated computer accounts should be pre-created by IT staff: Set-ADDomain -Identity <domain> -Replace @{"ms-DS-MachineAccountQuota"="0"}. Create a delegation group for helpdesk staff who need to join workstations.' `
+                -Impact 'Enables RBCD privilege escalation attacks without requiring any existing elevated privileges - a standard domain user can become Domain Admin if any computer in the environment is unpatched for RBCD abuse.' `
+                -FrameworkMapping 'CIS-SecureConfig' -ZeroTrustPillar 'Infrastructure' `
+                -MitreAttack 'T1078.002' `
+                -DataSource 'Get-ADDomain' `
+                -Remediation 'Set-ADDomain -Identity (Get-ADDomain).DistinguishedName -Replace @{"ms-DS-MachineAccountQuota"="0"}' `
+                -AutoFixAvailable 'Yes' -RemediationPriority 'P2' `
+                -Notes "Current quota: $quota"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-003' -Workload 'ActiveDirectory' -Component 'Domain' `
+                -CheckName 'Machine Account Quota (msDS-MachineAccountQuota)' -Category 'Configuration' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected 'msDS-MachineAccountQuota is 0. Non-admin users cannot join computers to the domain.' `
+                -DataSource 'Get-ADDomain'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-CFG-003: MachineAccountQuota check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-CFG-003' -Workload 'ActiveDirectory' -Component 'Domain' `
+            -CheckName 'Machine Account Quota (msDS-MachineAccountQuota)' -Category 'Configuration' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-ADDomain' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-CFG-004  -  AD Recycle Bin Status
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-CFG-004: Checking AD Recycle Bin status"
+
+        $recycleBin = Get-ADOptionalFeature `
+            -Filter { Name -eq 'Recycle Bin Feature' } `
+            -Scope ForestOrConfigurationSet -Target $forest.Name `
+            -Server $domain.DNSRoot -ErrorAction Stop
+
+        $isEnabled = ($recycleBin -and $recycleBin.EnabledScopes.Count -gt 0)
+
+        if (-not $isEnabled) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-004' -Workload 'ActiveDirectory' -Component 'Forest' `
+                -CheckName 'Active Directory Recycle Bin' -Category 'Resilience' -Severity 'Medium' `
+                -Status 'Fail' `
+                -IssueDetected 'Active Directory Recycle Bin is not enabled. Deleted objects cannot be restored without tombstone recovery.' `
+                -Explanation 'Without the Recycle Bin, accidentally deleted OUs, users, or groups require a full AD restore or complex tombstone reanimation. With it, deleted objects retain all attributes and can be restored in seconds.' `
+                -PossibleSolution 'Enable via: Enable-ADOptionalFeature "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target (Get-ADForest).Name. Requires Forest Functional Level 2008 R2+. This is a one-way, irreversible change.' `
+                -Impact 'Accidental deletion of critical AD objects (users, OUs, groups) requires a disruptive restore from backup. Recovery windows can be measured in hours.' `
+                -FrameworkMapping 'NIST-Recover' -ZeroTrustPillar 'Infrastructure' `
+                -DataSource 'Get-ADOptionalFeature' `
+                -Remediation 'Enable-ADOptionalFeature "Recycle Bin Feature" -Scope ForestOrConfigurationSet -Target (Get-ADForest).Name -Confirm:$false' `
+                -AutoFixAvailable 'Yes' -RemediationPriority 'P3'))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-004' -Workload 'ActiveDirectory' -Component 'Forest' `
+                -CheckName 'Active Directory Recycle Bin' -Category 'Resilience' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected 'AD Recycle Bin is enabled.' `
+                -DataSource 'Get-ADOptionalFeature'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-CFG-004: Recycle Bin check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-CFG-004' -Workload 'ActiveDirectory' -Component 'Forest' `
+            -CheckName 'Active Directory Recycle Bin' -Category 'Resilience' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-ADOptionalFeature' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # AD-CFG-005  -  Domain and Forest Functional Level
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "AD-CFG-005: Checking domain and forest functional level"
+
+        $dfl  = $domain.DomainMode.ToString()
+        $ffl  = $forest.ForestMode.ToString()
+
+        $targetLevel = 'Windows2016Domain'
+        $legacyLevels = @('Windows2000Domain','Windows2003Domain','Windows2003InterimDomain',
+                          'Windows2008Domain','Windows2008R2Domain','Windows2012Domain','Windows2012R2Domain')
+
+        $dflLegacy = $dfl -in $legacyLevels
+        $fflLegacy = $ffl -in $legacyLevels.Replace('Domain','Forest')
+
+        if ($dflLegacy -or $fflLegacy) {
+            $severity = if ($dfl -match '2008|2003|2000') { 'High' } else { 'Medium' }
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-005' -Workload 'ActiveDirectory' -Component 'Domain' `
+                -CheckName 'Domain and Forest Functional Level' -Category 'Configuration' -Severity $severity `
+                -Status 'Warning' `
+                -IssueDetected "Domain functional level: $dfl | Forest functional level: $ffl. Target: Windows Server 2016." `
+                -Explanation 'Domain Functional Level (DFL) 2016 unlocks Protected Users group enhancements, Privileged Access Management features, and blocks LM/NTLMv1 by default. Lower levels expose the environment to downgrade attacks and prevent use of modern security controls.' `
+                -PossibleSolution 'Raise DFL: Set-ADDomainMode -Identity (Get-ADDomain) -Mode Windows2016Domain. Raise FFL: Set-ADForestMode -Identity (Get-ADForest) -Mode Windows2016Forest. All DCs must be on Windows Server 2016+ before raising. This is irreversible.' `
+                -Impact 'Modern security features including Kerberos armoring, protected users enforcement, and PAM trust are unavailable below DFL 2016.' `
+                -FrameworkMapping 'CIS-SecureConfig' -ZeroTrustPillar 'Infrastructure' `
+                -DataSource 'Get-ADDomain;Get-ADForest' `
+                -Remediation 'Set-ADDomainMode -Identity (Get-ADDomain).DistinguishedName -Mode Windows2016Domain; Set-ADForestMode -Identity (Get-ADForest).Name -Mode Windows2016Forest' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                -Notes "DFL: $dfl | FFL: $ffl"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'AD-CFG-005' -Workload 'ActiveDirectory' -Component 'Domain' `
+                -CheckName 'Domain and Forest Functional Level' -Category 'Configuration' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected "Domain functional level $dfl and forest functional level $ffl meet the Windows Server 2016 baseline." `
+                -DataSource 'Get-ADDomain;Get-ADForest' -Notes "DFL: $dfl | FFL: $ffl"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "AD-CFG-005: Functional level check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'AD-CFG-005' -Workload 'ActiveDirectory' -Component 'Domain' `
+            -CheckName 'Domain and Forest Functional Level' -Category 'Configuration' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-ADDomain;Get-ADForest' -Notes $_.Exception.Message))
+    }
+
+    Write-TtcLog -Level Info -Message "Active Directory assessment complete  -  $($findings.Count) finding(s) generated"
     return $findings.ToArray()
 }

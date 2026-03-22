@@ -14,12 +14,12 @@ BeforeAll {
     $modulePsd1 = Resolve-Path (Join-Path $PSScriptRoot '..\TakeItToCloud.Assess.psd1')
     Import-Module -Name $modulePsd1.Path -Force -ErrorAction Stop
 
-    # Temp output directory — cleaned up in AfterAll
+    # Temp output directory  -  cleaned up in AfterAll
     $script:tempDir = Join-Path $env:TEMP "TtcReportTests_$(Get-Random)"
     $null = New-Item -Path $tempDir -ItemType Directory -Force
 
     # ---------------------------------------------------------------------------
-    # Shared test finding set — covers all category/severity/status combinations
+    # Shared test finding set  -  covers all category/severity/status combinations
     # used by scoring and filtering logic.
     # ---------------------------------------------------------------------------
     $script:testFindings = @(

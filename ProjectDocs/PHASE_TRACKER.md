@@ -267,16 +267,124 @@ Invoke-Pester -Path .\TakeItToCloud.Assess\Tests\ -CodeCoverage .\TakeItToCloud.
 
 ---
 
+---
+
+### Phase 7 — Expert Review: All Recommended Improvements (Completed 2026-03-22)
+
+**Files Created:**
+
+| File | Purpose |
+|------|---------|
+| `Private/Invoke-TtcMgGraphRequest.ps1` | Graph API retry wrapper (HTTP 429/503 + Retry-After) |
+| `Private/Test-TtcGraphConnection.ps1` | Graph connection validator with scope checking |
+| `Public/Compare-TtcAssessment.ps1` | Delta/trend reporting between two assessment CSV files |
+| `Assessors/MDE/Invoke-TtcMdeAssessment.ps1` | MDE assessor (device onboarding, Secure Score, alerts, compliance) |
+| `Assessors/PIM/Invoke-TtcPimAssessment.ps1` | PIM assessor (activation policies, stale assignments, standing roles, access reviews) |
+| `Assessors/ADCS/Invoke-TtcAdcsAssessment.ps1` | AD CS assessor (ESC1/2/3/6/8 vulnerability checks) |
+| `Rules/MDE.Rules.json` | MDE rule pack |
+| `Rules/PIM.Rules.json` | PIM rule pack |
+| `Rules/ADCS.Rules.json` | AD CS rule pack with ESC reference links |
+
+**Files Modified:**
+
+| File | Change |
+|------|--------|
+| `Private/New-TtcFinding.ps1` | Added `MitreAttack` parameter and property to finding schema |
+| `Public/New-TtcFindingObject.ps1` | Added `MitreAttack` parameter (passthrough to New-TtcFinding) |
+| `Assessors/ActiveDirectory/Invoke-TtcAdAssessment.ps1` | Added 7 checks: ESC1, AS-REP, DCSync, AdminSDHolder, MachineAccountQuota, Recycle Bin, DFL |
+| `Assessors/EntraID/Invoke-TtcEntraAssessment.ps1` | Added 6 checks: App creds, over-privileged apps, PIM adoption, FIDO2, cross-tenant, break-glass |
+| `Assessors/ExchangeOnline/Invoke-TtcExoAssessment.ps1` | Added 4 checks: inbox forwarding, SCL=-1 bypass, EWS policy, mailbox delegation |
+| `Public/Invoke-TtcAssessment.ps1` | Added: Write-Progress, -ExcludeChecksFile, MDE/PIM/ADCS in assessorMap + ValidateSet |
+| `Public/Get-TtcFindingSummary.ps1` | Added -OutputFormat parameter (Console/Markdown/JSON) |
+| `Private/Test-TtcPrerequisite.ps1` | Added MDE, PIM, ADCS workload prereq entries |
+| `TakeItToCloud.Assess.psd1` | Version bumped to 1.1.0; added Compare-TtcAssessment + all assessor functions to FunctionsToExport |
+
+**New AD Assessor Checks (Phase 7 additions):**
+| FindingId | CheckName | Severity | MITRE |
+|-----------|-----------|----------|-------|
+| AD-SEC-006 | Kerberoastable User Accounts | High | T1558.003 |
+| AD-SEC-007 | AS-REP Roastable Accounts | Critical | T1558.004 |
+| AD-SEC-008 | Unauthorized DCSync Rights | Critical | T1003.006 |
+| AD-SEC-009 | AdminSDHolder Rogue ACEs | Critical | T1484.001 |
+| AD-CFG-003 | Machine Account Quota | High | T1078.002 |
+| AD-CFG-004 | AD Recycle Bin Status | Medium | - |
+| AD-CFG-005 | Domain/Forest Functional Level | Medium | - |
+
+**New Entra ID Assessor Checks (Phase 7 additions):**
+| FindingId | CheckName | Severity | MITRE |
+|-----------|-----------|----------|-------|
+| ENT-SEC-006 | Workload Identity Credential Expiry | High | T1528 |
+| ENT-SEC-007 | Over-Privileged Enterprise Applications | High | T1098.002 |
+| ENT-SEC-008 | Privileged Identity Management Adoption | High/Medium | T1078.004 |
+| ENT-SEC-009 | FIDO2/Passwordless Authentication Enablement | Medium | - |
+| ENT-CFG-004 | Cross-Tenant Access Settings | Medium | - |
+| ENT-SEC-010 | Emergency Access Account Validation | High | - |
+
+**New EXO Assessor Checks (Phase 7 additions):**
+| FindingId | CheckName | Severity | MITRE |
+|-----------|-----------|----------|-------|
+| EXO-SEC-004 | Inbox Rules Forwarding to External Recipients | High | T1114.003 |
+| EXO-SEC-005 | Transport Rules Bypassing Spam Filtering | High | T1566.001 |
+| EXO-CFG-005 | Exchange Web Services Access Policy | Medium | - |
+| EXO-SEC-006 | Mailbox Full Access Delegation | Medium | T1114.002 |
+
+**MDE Assessor Checks:**
+| FindingId | CheckName | Severity |
+|-----------|-----------|----------|
+| MDE-CFG-001 | MDE Device Onboarding Coverage | High |
+| MDE-SEC-001 | Secure Score - Device Controls | High/Medium |
+| MDE-SEC-002 | Unresolved High-Severity Security Alerts | Critical/High |
+| MDE-CFG-002 | Device Compliance Policy Coverage | High |
+| MDE-CFG-003 | Non-Compliant Device Count | Medium |
+| MDE-MON-001 | Defender Device Security Improvement Actions | Medium |
+
+**PIM Assessor Checks:**
+| FindingId | CheckName | Severity |
+|-----------|-----------|----------|
+| PIM-CFG-001 | PIM Activation Policy Configuration | High |
+| PIM-SEC-001 | Stale PIM Eligible Assignments | Medium |
+| PIM-SEC-002 | Standing Privileged Role Assignments | High |
+| PIM-GOV-001 | Access Reviews for Privileged Roles | Medium |
+
+**AD CS Assessor Checks (ESC vulnerability classes):**
+| FindingId | CheckName | Severity | ESC Class |
+|-----------|-----------|----------|-----------|
+| ADCS-SEC-001 | ESC1 - Enrollee Supplies Subject SAN | Critical | ESC1 |
+| ADCS-SEC-002 | ESC2 - Any Purpose or No EKU Templates | High | ESC2 |
+| ADCS-SEC-003 | ESC3 - Certificate Request Agent Templates | High | ESC3 |
+| ADCS-SEC-004 | ESC6 - EDITF_ATTRIBUTESUBJECTALTNAME2 Flag | Critical | ESC6 |
+| ADCS-SEC-005 | ESC8 - HTTP Certificate Web Enrollment | Critical | ESC8 |
+
+**Key Decisions Made:**
+- Schema extended from 21 to 22 properties: `MitreAttack` added (empty string when N/A)
+- All new code uses ASCII punctuation only (no em/en dashes, no curly quotes) to prevent PS 5.1 encoding issues
+- Graph retry wrapper uses exponential respect for Retry-After header (HTTP 429/503)
+- `Invoke-TtcMgGraphRequest` replaces direct `Invoke-MgGraphRequest` calls in new assessors
+- MDE assessor uses Graph Security API and Intune device management endpoints
+- PIM assessor requires Entra ID P2 license for `roleManagementPolicies` API access
+- AD CS assessor uses `certutil -getreg` for CA flags and HTTP probe for ESC8 detection
+- `Compare-TtcAssessment` supports Console, CSV, Markdown, and JSON output formats
+- `Write-Progress` added to orchestrator for long-running assessments
+- `-ExcludeChecksFile` parameter supports comment lines (#) for documented suppression lists
+- Module version bumped to 1.1.0 to reflect the major capability expansion
+
+**Required Prerequisites (new workloads):**
+- MDE: `Connect-MgGraph -Scopes "SecurityEvents.Read.All","DeviceManagementManagedDevices.Read.All"`
+- PIM: `Connect-MgGraph -Scopes "RoleManagement.Read.Directory","PrivilegedAccess.Read.AzureAD","Directory.Read.All"` + Entra ID P2
+- ADCS: `Import-Module ActiveDirectory`; domain-joined machine; `certutil` available
+
+---
+
 ## Current Phase
 
-### Phase 7 — Backlog / Future Work
+### Phase 8 — Backlog / Future Work
 - **Status**: No phases currently planned
 - **Potential scope** (not committed):
-  - Additional AD checks (AdminSDHolder, LAPS coverage, tombstone lifetime)
-  - Exchange Online compliance checks (DLP policies, message encryption)
-  - Defender for Endpoint integration (MDE device compliance)
+  - LAPS (Local Administrator Password Solution) coverage check
+  - Exchange Online DLP policy and message encryption checks
   - Custom rule pack loading from external paths (`-RulesPath` override)
   - Remediation field population across all existing rules (enables full AutoFix value)
+  - Pester test coverage for Phase 7 new assessors and Compare-TtcAssessment
 
 ---
 

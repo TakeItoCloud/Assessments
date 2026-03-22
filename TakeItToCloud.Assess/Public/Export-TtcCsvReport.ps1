@@ -11,7 +11,7 @@ function Export-TtcCsvReport {
     .PARAMETER OutputPath
         Path for the CSV file. Defaults to ./Reports/TtcAssessment_{date}.csv.
     .OUTPUTS
-        System.IO.FileInfo — the created CSV file.
+        System.IO.FileInfo  -  the created CSV file.
     .EXAMPLE
         Export-TtcCsvReport -Findings $findings -OutputPath "C:\Reports\Assessment.csv"
     .EXAMPLE

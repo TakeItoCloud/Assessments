@@ -1,6 +1,6 @@
 @{
     RootModule        = 'TakeItToCloud.Assess.psm1'
-    ModuleVersion     = '1.0.0'
+    ModuleVersion     = '1.1.0'
     GUID              = 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
     Author            = 'Carlos - TakeItToCloud'
     CompanyName       = 'TakeItToCloud'
@@ -15,6 +15,20 @@
         'New-TtcFindingObject'
         'Get-TtcFindingSummary'
         'Invoke-TtcAutoFix'
+        'Compare-TtcAssessment'
+        'Enable-TtcConsoleLogging'
+        'Disable-TtcConsoleLogging'
+        'Set-TtcLogPath'
+        'Get-TtcLogPath'
+        'Invoke-TtcAdAssessment'
+        'Invoke-TtcEntraAssessment'
+        'Invoke-TtcExoAssessment'
+        'Invoke-TtcHybridAssessment'
+        'Invoke-TtcDefenderAssessment'
+        'Invoke-TtcCollabAssessment'
+        'Invoke-TtcMdeAssessment'
+        'Invoke-TtcPimAssessment'
+        'Invoke-TtcAdcsAssessment'
     )
     CmdletsToExport   = @()
     VariablesToExport  = @()

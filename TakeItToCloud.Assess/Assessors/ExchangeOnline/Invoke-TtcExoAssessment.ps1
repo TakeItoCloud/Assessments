@@ -54,7 +54,7 @@ function Invoke-TtcExoAssessment {
         $ErrorActionPreference = 'Stop'
         $orgConfig    = Get-OrganizationConfig -ErrorAction Stop
         $exoConnected = $true
-        Write-TtcLog -Level Info -Message "Exchange Online connected — org: $($orgConfig.DisplayName)"
+        Write-TtcLog -Level Info -Message "Exchange Online connected  -  org: $($orgConfig.DisplayName)"
     }
     catch {
         Write-TtcLog -Level Warning -Message "Exchange Online not connected or Get-OrganizationConfig failed: $($_.Exception.Message)"
@@ -65,7 +65,7 @@ function Invoke-TtcExoAssessment {
             -FindingId 'EXO-MON-002' -Workload 'ExchangeOnline' -Component 'Prerequisites' `
             -CheckName 'Unified Audit Log Status' -Category 'Monitoring' -Severity 'High' `
             -Status 'Error' `
-            -IssueDetected 'Exchange Online is not connected — EXO assessment cannot proceed.' `
+            -IssueDetected 'Exchange Online is not connected  -  EXO assessment cannot proceed.' `
             -Explanation 'The Exchange Online assessment requires an active ExchangeOnlineManagement session. All checks in this workload are skipped.' `
             -PossibleSolution 'Run: Install-Module ExchangeOnlineManagement -Force; Connect-ExchangeOnline. Requires Exchange Administrator or Global Administrator credentials.' `
             -Impact 'No Exchange Online assessment data can be collected.' `
@@ -84,7 +84,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-MON-002 — Unified Audit Log Status
+    # EXO-MON-002  -  Unified Audit Log Status
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -106,7 +106,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-MON-002' -Workload 'ExchangeOnline' -Component 'AuditLog' `
                 -CheckName 'Unified Audit Log Status' -Category 'Monitoring' -Severity 'High' `
                 -Status 'Fail' `
-                -IssueDetected 'Unified Audit Log ingestion is DISABLED — user and admin activity is not being recorded.' `
+                -IssueDetected 'Unified Audit Log ingestion is DISABLED  -  user and admin activity is not being recorded.' `
                 -Explanation 'The Unified Audit Log records actions across Exchange Online, SharePoint, Teams, Entra ID, and other Microsoft 365 services. When disabled, there is no centralized record of user or admin activity for incident response, compliance investigations, or forensics.' `
                 -PossibleSolution 'Enable via: Set-AdminAuditLogConfig -UnifiedAuditLogIngestionEnabled $true. Or in the Microsoft Purview compliance portal: Audit > Start recording user and admin activity.' `
                 -Impact 'Without audit logging, there is no forensic trail for security incidents. Compliance frameworks (SOC 2, ISO 27001, HIPAA) require audit logging. Incident response capabilities are severely limited.' `
@@ -127,7 +127,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-MON-001 — Mailbox Audit Logging
+    # EXO-MON-001  -  Mailbox Audit Logging
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -177,7 +177,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-SEC-001 — Modern Authentication Status
+    # EXO-SEC-001  -  Modern Authentication Status
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -198,7 +198,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-SEC-001' -Workload 'ExchangeOnline' -Component 'Authentication' `
                 -CheckName 'Modern Authentication Status' -Category 'Security' -Severity 'High' `
                 -Status 'Fail' `
-                -IssueDetected 'Modern authentication (OAuth 2.0) is DISABLED for Exchange Online — clients use Basic authentication and bypass MFA.' `
+                -IssueDetected 'Modern authentication (OAuth 2.0) is DISABLED for Exchange Online  -  clients use Basic authentication and bypass MFA.' `
                 -Explanation 'Modern authentication is required for MFA and Conditional Access policies to apply to Exchange Online clients. When disabled, clients fall back to Basic authentication, which transmits credentials with every request and completely bypasses MFA controls regardless of Entra ID policy.' `
                 -PossibleSolution 'Enable: Set-OrganizationConfig -OAuth2ClientProfileEnabled $true. This is enabled by default in new tenants. After enabling, verify Outlook and other clients reconnect using modern auth tokens.' `
                 -Impact 'MFA and Conditional Access policies do not protect Exchange Online access. Credentials are transmitted with every request, increasing exposure to credential theft and replay attacks. BEC (Business Email Compromise) risk is significantly elevated.' `
@@ -219,7 +219,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-SEC-002 — Anti-Malware Policy Configuration
+    # EXO-SEC-002  -  Anti-Malware Policy Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -278,7 +278,7 @@ function Invoke-TtcExoAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'EXO-SEC-002' -Workload 'ExchangeOnline' -Component 'AntiMalware' `
                 -CheckName 'Anti-Malware Policy Configuration' -Category 'Security' -Severity 'High' `
-                -Status 'Error' -IssueDetected 'No anti-malware filter policy found — unexpected state in Exchange Online.' `
+                -Status 'Error' -IssueDetected 'No anti-malware filter policy found  -  unexpected state in Exchange Online.' `
                 -DataSource 'Get-MalwareFilterPolicy'))
         }
     }
@@ -292,7 +292,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-SEC-003 — DKIM Signing Configuration
+    # EXO-SEC-003  -  DKIM Signing Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -317,7 +317,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-SEC-003' -Workload 'ExchangeOnline' -Component 'DKIM' `
                 -CheckName 'DKIM Signing Configuration' -Category 'Security' -Severity 'High' `
                 -Status 'Warning' `
-                -IssueDetected 'No custom accepted domains have DKIM configuration — tenant may only use .onmicrosoft.com domain.' `
+                -IssueDetected 'No custom accepted domains have DKIM configuration  -  tenant may only use .onmicrosoft.com domain.' `
                 -Explanation 'DKIM is applicable to custom domains only. A production tenant should have custom domains with DKIM configured. If this is intentional (brand-new tenant), add custom domains and configure DKIM.' `
                 -DataSource 'Get-DkimSigningConfig' `
                 -Notes 'No non-onmicrosoft.com DKIM configs found'))
@@ -360,7 +360,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-CFG-001 — SPF and DMARC Record Configuration
+    # EXO-CFG-001  -  SPF and DMARC Record Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -396,7 +396,7 @@ function Invoke-TtcExoAssessment {
             $findings.Add((New-TtcFinding `
                 -FindingId 'EXO-CFG-001' -Workload 'ExchangeOnline' -Component 'EmailAuthentication' `
                 -CheckName 'SPF and DMARC Record Configuration' -Category 'Configuration' -Severity 'High' `
-                -Status 'NotAssessed' -IssueDetected 'No custom accepted domains found — SPF/DMARC check not applicable.' `
+                -Status 'NotAssessed' -IssueDetected 'No custom accepted domains found  -  SPF/DMARC check not applicable.' `
                 -DataSource 'Get-AcceptedDomain;Resolve-DnsName'))
         }
         else {
@@ -440,7 +440,7 @@ function Invoke-TtcExoAssessment {
                     else {
                         $dmarcValue = $dmarcRecord.Strings -join ''
                         if ($dmarcValue -notmatch 'p=(quarantine|reject)') {
-                            $dmarcWeak.Add("$domainName (DMARC p=none — monitor only, no enforcement)")
+                            $dmarcWeak.Add("$domainName (DMARC p=none  -  monitor only, no enforcement)")
                         }
                     }
                 }
@@ -479,7 +479,7 @@ function Invoke-TtcExoAssessment {
                     -CheckName 'SPF and DMARC Record Configuration' -Category 'Configuration' -Severity 'High' `
                     -Status 'Warning' `
                     -IssueDetected "SPF exists for all domains; DMARC exists but $($dmarcWeak.Count) domain(s) use policy=none (monitoring only): $($dmarcWeak -join '; ')" `
-                    -Explanation 'DMARC policy=none only collects reporting data — it does not instruct receivers to quarantine or reject authentication failures. The domain is being monitored but not actively protected against spoofing. This is acceptable as a starting point but must be advanced to p=quarantine or p=reject.' `
+                    -Explanation 'DMARC policy=none only collects reporting data  -  it does not instruct receivers to quarantine or reject authentication failures. The domain is being monitored but not actively protected against spoofing. This is acceptable as a starting point but must be advanced to p=quarantine or p=reject.' `
                     -PossibleSolution 'Review DMARC aggregate reports at the rua address. Once SPF and DKIM are confirmed passing in the reports, update DMARC to p=quarantine. Progressively move to p=reject. DNS update: change TXT record at _dmarc.yourdomain.com.' `
                     -Impact 'Email that fails SPF/DKIM checks from your domain is not blocked by receivers. Spoofed email can still reach recipients. Brand protection is in monitoring mode only.' `
                     -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Data' `
@@ -510,7 +510,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-CFG-002 — Automatic External Email Forwarding
+    # EXO-CFG-002  -  Automatic External Email Forwarding
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -529,7 +529,7 @@ function Invoke-TtcExoAssessment {
                 -CheckName 'Automatic External Email Forwarding' -Category 'Security' -Severity 'High' `
                 -Status 'Pass' `
                 -IssueDetected 'Automatic external email forwarding is blocked (AutoForwardingMode = Off).' `
-                -Explanation 'Blocking automatic external forwarding prevents attackers who compromise a mailbox from silently redirecting all incoming email to an external address — a primary Business Email Compromise (BEC) technique.' `
+                -Explanation 'Blocking automatic external forwarding prevents attackers who compromise a mailbox from silently redirecting all incoming email to an external address  -  a primary Business Email Compromise (BEC) technique.' `
                 -DataSource 'Get-HostedOutboundSpamFilterPolicy' `
                 -Notes "AutoForwardingMode: $fwdMode"))
         }
@@ -538,8 +538,8 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-CFG-002' -Workload 'ExchangeOnline' -Component 'MailForwarding' `
                 -CheckName 'Automatic External Email Forwarding' -Category 'Security' -Severity 'High' `
                 -Status 'Fail' `
-                -IssueDetected 'Automatic external email forwarding is fully ENABLED (AutoForwardingMode = On) — any user can silently exfiltrate email externally.' `
-                -Explanation 'When AutoForwardingMode = On, Exchange Online permits inbox rules to automatically forward messages to any external address without restriction. After compromising a mailbox, attackers configure a forwarding rule to receive copies of all email silently — including invoices, wire transfer confirmations, credentials, and sensitive business communications.' `
+                -IssueDetected 'Automatic external email forwarding is fully ENABLED (AutoForwardingMode = On)  -  any user can silently exfiltrate email externally.' `
+                -Explanation 'When AutoForwardingMode = On, Exchange Online permits inbox rules to automatically forward messages to any external address without restriction. After compromising a mailbox, attackers configure a forwarding rule to receive copies of all email silently  -  including invoices, wire transfer confirmations, credentials, and sensitive business communications.' `
                 -PossibleSolution 'Immediately block: Set-HostedOutboundSpamFilterPolicy -Identity Default -AutoForwardingMode Off. Audit existing forwarding: Get-Mailbox -ResultSize Unlimited | Where-Object { $_.ForwardingSmtpAddress -ne $null } | Select-Object Name, ForwardingSmtpAddress.' `
                 -Impact 'Any compromised mailbox can silently forward all incoming email to an attacker-controlled address. Sensitive information, invoices, wire transfer requests, and strategic communications are exfiltrated continuously until the forwarding rule is discovered.' `
                 -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Data' `
@@ -550,12 +550,12 @@ function Invoke-TtcExoAssessment {
                 -Notes "AutoForwardingMode: $fwdMode"))
         }
         else {
-            # Automatic — Microsoft default, uses heuristics
+            # Automatic  -  Microsoft default, uses heuristics
             $findings.Add((New-TtcFinding `
                 -FindingId 'EXO-CFG-002' -Workload 'ExchangeOnline' -Component 'MailForwarding' `
                 -CheckName 'Automatic External Email Forwarding' -Category 'Security' -Severity 'High' `
                 -Status 'Warning' `
-                -IssueDetected "Automatic external forwarding is set to 'Automatic' (Microsoft heuristics) — forwarding is partially controlled but not fully blocked." `
+                -IssueDetected "Automatic external forwarding is set to 'Automatic' (Microsoft heuristics)  -  forwarding is partially controlled but not fully blocked." `
                 -Explanation 'AutoForwardingMode = Automatic applies Microsoft heuristics and reputation signals to decide whether to permit automatic forwarding. While this provides some protection, it does not guarantee all forwarding rules are blocked. Microsoft recommends setting this to Off to prevent all BEC-style email exfiltration through forwarding rules.' `
                 -PossibleSolution 'Set to Off: Set-HostedOutboundSpamFilterPolicy -Identity Default -AutoForwardingMode Off. Identify legitimate forwarding requirements first: Get-Mailbox -ResultSize Unlimited | Where-Object { $_.ForwardingSmtpAddress -ne $null }. Replace user-controlled forwarding with IT-managed transport rules for approved scenarios.' `
                 -Impact 'Determined attackers who compromise high-reputation accounts may still establish forwarding rules. Heuristics-based filtering is not a substitute for explicit blocking of all automatic external forwarding.' `
@@ -577,7 +577,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-CFG-003 — Connector TLS Enforcement
+    # EXO-CFG-003  -  Connector TLS Enforcement
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -605,7 +605,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-CFG-003' -Workload 'ExchangeOnline' -Component 'Connectors' `
                 -CheckName 'Connector TLS Enforcement' -Category 'Configuration' -Severity 'Medium' `
                 -Status 'Pass' `
-                -IssueDetected 'No custom partner connectors configured — default Exchange Online routing uses opportunistic TLS.' `
+                -IssueDetected 'No custom partner connectors configured  -  default Exchange Online routing uses opportunistic TLS.' `
                 -Explanation 'Default Exchange Online mail routing negotiates opportunistic TLS with receiving servers. No custom connector TLS configuration issues to report.' `
                 -DataSource 'Get-OutboundConnector;Get-InboundConnector' `
                 -Notes $notes))
@@ -655,7 +655,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-CFG-004 — Anti-Spam Outbound Notification Configuration
+    # EXO-CFG-004  -  Anti-Spam Outbound Notification Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -676,7 +676,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-CFG-004' -Workload 'ExchangeOnline' -Component 'AntiSpam' `
                 -CheckName 'Anti-Spam Outbound Notification' -Category 'Configuration' -Severity 'Medium' `
                 -Status 'Pass' `
-                -IssueDetected 'Outbound spam admin notification is configured — security team will be alerted on compromised senders.' `
+                -IssueDetected 'Outbound spam admin notification is configured  -  security team will be alerted on compromised senders.' `
                 -DataSource 'Get-HostedOutboundSpamFilterPolicy' `
                 -Notes $notes))
         }
@@ -685,7 +685,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-CFG-004' -Workload 'ExchangeOnline' -Component 'AntiSpam' `
                 -CheckName 'Anti-Spam Outbound Notification' -Category 'Configuration' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'No admin notification configured for outbound spam detection — compromised accounts sending spam will not alert the security team.' `
+                -IssueDetected 'No admin notification configured for outbound spam detection  -  compromised accounts sending spam will not alert the security team.' `
                 -Explanation 'When Exchange Online detects an account exceeding outbound spam thresholds (indicating credential compromise or malware), it can notify administrators. Without this notification, compromised accounts may continue sending spam undetected until external blocklists are triggered, causing email deliverability issues for the entire organization.' `
                 -PossibleSolution 'Configure notification: Set-HostedOutboundSpamFilterPolicy -Identity Default -NotifyOutboundSpam $true -NotifyOutboundSpamRecipients @("secops@yourdomain.com"). Consider also enabling BCC copy: -BccSuspiciousOutboundMail $true.' `
                 -Impact 'Compromised accounts sending spam are not detected until external systems (Spamhaus, Microsoft block lists) flag your mail server IP range. Delayed detection extends the spam campaign duration and causes mail delivery failures for all users.' `
@@ -706,7 +706,7 @@ function Invoke-TtcExoAssessment {
     }
 
     # =========================================================================
-    # EXO-GOV-001 — Exchange Admin Role Hygiene
+    # EXO-GOV-001  -  Exchange Admin Role Hygiene
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -737,7 +737,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-GOV-001' -Workload 'ExchangeOnline' -Component 'AdminRoles' `
                 -CheckName 'Exchange Admin Role Hygiene' -Category 'Governance' -Severity 'High' `
                 -Status 'Warning' `
-                -IssueDetected 'Organization Management role group has 0 direct members — Exchange admin access may be via Global Administrator only.' `
+                -IssueDetected 'Organization Management role group has 0 direct members  -  Exchange admin access may be via Global Administrator only.' `
                 -Explanation 'Exchange Organization Management should have at least one explicitly assigned member for accountability and break-glass access. If managed solely via Global Administrator, all GAs have implicit full Exchange access which may not be intentional and should be documented.' `
                 -DataSource 'Get-RoleGroupMember' `
                 -Notes 'Direct members: 0'))
@@ -747,7 +747,7 @@ function Invoke-TtcExoAssessment {
                 -FindingId 'EXO-GOV-001' -Workload 'ExchangeOnline' -Component 'AdminRoles' `
                 -CheckName 'Exchange Admin Role Hygiene' -Category 'Governance' -Severity 'High' `
                 -Status 'Pass' `
-                -IssueDetected "$orgMgmtCount member(s) in Organization Management — within the $MaxOrgMgmtMembers-member threshold." `
+                -IssueDetected "$orgMgmtCount member(s) in Organization Management  -  within the $MaxOrgMgmtMembers-member threshold." `
                 -DataSource 'Get-RoleGroupMember' `
                 -Notes "Members: $memberNames"))
         }
@@ -761,6 +761,270 @@ function Invoke-TtcExoAssessment {
             -DataSource 'Get-RoleGroupMember' -Notes $_.Exception.Message))
     }
 
-    Write-TtcLog -Level Info -Message "Exchange Online assessment complete — $($findings.Count) finding(s) generated"
+    # =========================================================================
+    # EXO-SEC-004  -  Mailbox Inbox Rules Forwarding to External Recipients
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "EXO-SEC-004: Checking inbox rules forwarding to external recipients"
+
+        # Get all mailboxes then check inbox rules for external forwarding
+        $mailboxes = Get-Mailbox -ResultSize Unlimited -ErrorAction Stop |
+            Where-Object { $_.RecipientTypeDetails -eq 'UserMailbox' }
+        $totalMailboxes = ($mailboxes | Measure-Object).Count
+
+        $externalForwardRules = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($mbx in $mailboxes) {
+            try {
+                $rules = Get-InboxRule -Mailbox $mbx.PrimarySmtpAddress -ErrorAction SilentlyContinue
+                foreach ($rule in $rules) {
+                    if ($rule.Enabled -and ($rule.ForwardTo -or $rule.ForwardAsAttachmentTo -or $rule.RedirectTo)) {
+                        $allTargets = @()
+                        if ($rule.ForwardTo)              { $allTargets += $rule.ForwardTo }
+                        if ($rule.ForwardAsAttachmentTo)  { $allTargets += $rule.ForwardAsAttachmentTo }
+                        if ($rule.RedirectTo)             { $allTargets += $rule.RedirectTo }
+
+                        $externalTargets = $allTargets | Where-Object {
+                            $_ -match '@' -and $_ -notmatch [regex]::Escape($mbx.PrimarySmtpAddress.Split('@')[1])
+                        }
+                        if ($externalTargets) {
+                            $externalForwardRules.Add("$($mbx.PrimarySmtpAddress): Rule '$($rule.Name)' -> $($externalTargets -join ',')")
+                        }
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if ($externalForwardRules.Count -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-004' -Workload 'ExchangeOnline' -Component 'MailboxRules' `
+                -CheckName 'Inbox Rules Forwarding to External Recipients' -Category 'Security' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "$($externalForwardRules.Count) inbox rule(s) configured to forward or redirect mail to external addresses." `
+                -Explanation 'Inbox rules forwarding to external addresses are a primary Business Email Compromise (BEC) and data exfiltration indicator. Attackers who compromise a mailbox often create forwarding rules to silently copy all incoming mail to an external account for persistent surveillance - even after the password is reset.' `
+                -PossibleSolution 'Review each rule and confirm legitimacy with the mailbox owner. Remove unauthorized rules. Block external forwarding at org level: Set-RemoteDomain Default -AutoForwardEnabled $false. Create a transport rule to block all external auto-forwarding. Monitor via Microsoft 365 Defender alerts.' `
+                -Impact 'All incoming mail is silently copied to attacker-controlled addresses. Rules persist through password resets. Financial fraud, data theft, and supply-chain attacks are common outcomes.' `
+                -FrameworkMapping 'CIS-DataProtection' -ZeroTrustPillar 'Data' `
+                -MitreAttack 'T1114.003' `
+                -DataSource 'Get-InboxRule' `
+                -Remediation 'Identify rules: Get-Mailbox -ResultSize Unlimited | ForEach-Object { Get-InboxRule -Mailbox $_.PrimarySmtpAddress } | Where-Object {$_.ForwardTo -or $_.RedirectTo}. Remove: Remove-InboxRule -Identity <rule>. Block org-wide: New-TransportRule -Name "Block External Auto-Forward" -AutoForwardEnabled $false -SentToScope NotInOrganization.' `
+                -AutoFixAvailable 'Partial' -RemediationPriority 'P1' `
+                -Notes "Forwarding rules: $(($externalForwardRules | Select-Object -First 10) -join ' | ')"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-004' -Workload 'ExchangeOnline' -Component 'MailboxRules' `
+                -CheckName 'Inbox Rules Forwarding to External Recipients' -Category 'Security' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected "No inbox rules forwarding to external recipients found across $totalMailboxes mailbox(es)." `
+                -DataSource 'Get-InboxRule'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "EXO-SEC-004: Inbox rule forwarding check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'EXO-SEC-004' -Workload 'ExchangeOnline' -Component 'MailboxRules' `
+            -CheckName 'Inbox Rules Forwarding to External Recipients' -Category 'Security' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-InboxRule' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # EXO-SEC-005  -  Transport Rules Bypassing Spam Filtering (SCL=-1)
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "EXO-SEC-005: Checking transport rules that set SCL=-1 (bypass spam filter)"
+
+        $allTransportRules = Get-TransportRule -ErrorAction Stop
+        $sclBypassRules = $allTransportRules | Where-Object {
+            $_.State -eq 'Enabled' -and $_.SetSCL -eq -1
+        }
+        $sclBypassCount = ($sclBypassRules | Measure-Object).Count
+
+        if ($sclBypassCount -gt 0) {
+            $ruleDetails = ($sclBypassRules | ForEach-Object {
+                $condition = if ($_.SenderDomainIs) { "SenderDomain: $($_.SenderDomainIs -join ',')" }
+                             elseif ($_.From) { "From: $($_.From -join ',')" }
+                             elseif ($_.FromAddressContainsWords) { "FromContains: $($_.FromAddressContainsWords -join ',')" }
+                             else { 'Various conditions' }
+                "$($_.Name) [$condition]"
+            }) -join ' | '
+
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-005' -Workload 'ExchangeOnline' -Component 'MailFlow' `
+                -CheckName 'Transport Rules Bypassing Spam Filtering' -Category 'Security' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "$sclBypassCount transport rule(s) set SCL=-1, bypassing all spam and anti-phishing filters for matched messages." `
+                -Explanation 'Transport rules setting SCL=-1 mark messages as definitively not spam, bypassing all EOP and Defender for Office 365 filtering. Attackers can spoof sender addresses or domains covered by these rules to deliver malware and phishing emails directly to inboxes unfiltered.' `
+                -PossibleSolution 'Review each SCL=-1 rule. Replace broad domain-based bypass rules with enhanced filtering using ATP Safe Links/Safe Attachments instead. Only legitimate partner connectors should bypass filtering, and only when TLS-authenticated via connector rules.' `
+                -Impact 'Malicious email from spoofed or compromised domains covered by bypass rules lands in inboxes without anti-malware, anti-phishing, or spam scanning. Zero-day malware and credential phishing delivered undetected.' `
+                -FrameworkMapping 'CIS-EmailSecurity' -ZeroTrustPillar 'Applications' `
+                -MitreAttack 'T1566.001' `
+                -DataSource 'Get-TransportRule' `
+                -Remediation 'Review: Get-TransportRule | Where-Object {$_.SetSCL -eq -1}. For legitimate partner mail: use TLS-enforced inbound connectors instead of SCL bypass. Remove: Disable-TransportRule -Identity <rule>; Remove-TransportRule -Identity <rule>. Replace with: Set-HostedContentFilterPolicy to allow specific IPs without bypassing filters.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes "SCL=-1 rules: $ruleDetails"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-005' -Workload 'ExchangeOnline' -Component 'MailFlow' `
+                -CheckName 'Transport Rules Bypassing Spam Filtering' -Category 'Security' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected "No enabled transport rules setting SCL=-1 found." `
+                -DataSource 'Get-TransportRule' `
+                -Notes "Total transport rules checked: $(($allTransportRules | Measure-Object).Count)"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "EXO-SEC-005: SCL bypass rule check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'EXO-SEC-005' -Workload 'ExchangeOnline' -Component 'MailFlow' `
+            -CheckName 'Transport Rules Bypassing Spam Filtering' -Category 'Security' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-TransportRule' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # EXO-CFG-005  -  Exchange Web Services (EWS) Access Policy
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "EXO-CFG-005: Checking EWS access policy"
+
+        $orgConfig = Get-OrganizationConfig -ErrorAction Stop
+
+        $ewsEnabled       = $orgConfig.EwsEnabled
+        $ewsAllowList     = $orgConfig.EwsAllowList
+        $ewsBlockList     = $orgConfig.EwsBlockList
+        $ewsAppListMode   = $orgConfig.EwsApplicationAccessPolicy
+
+        # EwsEnabled: $null = enabled for all (not explicitly set), $false = disabled, $true = enabled (uses app list)
+        $ewsUnrestricted = ($null -eq $ewsEnabled -or $ewsEnabled -eq $true) -and
+                           ($null -eq $ewsApplicationAccessPolicy -or $ewsAppListMode -eq 'EnforceAllowList' -and -not $ewsAllowList)
+
+        if ($null -eq $ewsEnabled) {
+            # Default state - EWS is on for everything, check if any app restriction policy set
+            if (-not $ewsAppListMode) {
+                $findings.Add((New-TtcFinding `
+                    -FindingId 'EXO-CFG-005' -Workload 'ExchangeOnline' -Component 'ClientAccess' `
+                    -CheckName 'Exchange Web Services Access Policy' -Category 'Configuration' -Severity 'Medium' `
+                    -Status 'Warning' `
+                    -IssueDetected 'EWS is enabled without application-level access restrictions.' `
+                    -Explanation 'EWS (Exchange Web Services) is a legacy but still-supported API providing full mailbox access. Many malware families and attacker tools use EWS for silent mailbox access, calendar exfiltration, and automated impersonation attacks. Without an application access policy, any authenticated application can use EWS.' `
+                    -PossibleSolution 'If EWS is not required by any application, disable it. If required, configure an EWS application access policy to allowlist only legitimate application IDs. Consider migrating applications to Microsoft Graph (the modern API) which has better access controls.' `
+                    -Impact 'Any authenticated application (including malicious OAuth apps) can use EWS to access all mailbox content without additional authorization.' `
+                    -FrameworkMapping 'CIS-SecureConfig' -ZeroTrustPillar 'Applications' `
+                    -DataSource 'Get-OrganizationConfig' `
+                    -Remediation 'Disable EWS if unused: Set-OrganizationConfig -EwsEnabled $false. Or restrict by app: Set-OrganizationConfig -EwsApplicationAccessPolicy EnforceAllowList -EwsAllowList @("App1","App2"). Migrate to Graph: https://aka.ms/ewstoGraph.' `
+                    -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                    -Notes "EwsEnabled: $ewsEnabled | AppAccessPolicy: $ewsAppListMode | AllowList count: $(if ($ewsAllowList) { $ewsAllowList.Count } else { 0 })"))
+            }
+            else {
+                $findings.Add((New-TtcFinding `
+                    -FindingId 'EXO-CFG-005' -Workload 'ExchangeOnline' -Component 'ClientAccess' `
+                    -CheckName 'Exchange Web Services Access Policy' -Category 'Configuration' -Severity 'Medium' `
+                    -Status 'Pass' `
+                    -IssueDetected 'EWS application access policy is configured.' `
+                    -DataSource 'Get-OrganizationConfig' `
+                    -Notes "AppAccessPolicy: $ewsAppListMode | AllowList: $($ewsAllowList -join ', ') | BlockList: $($ewsBlockList -join ', ')"))
+            }
+        }
+        elseif ($ewsEnabled -eq $false) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-CFG-005' -Workload 'ExchangeOnline' -Component 'ClientAccess' `
+                -CheckName 'Exchange Web Services Access Policy' -Category 'Configuration' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected 'EWS is disabled at the organization level.' `
+                -DataSource 'Get-OrganizationConfig'))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-CFG-005' -Workload 'ExchangeOnline' -Component 'ClientAccess' `
+                -CheckName 'Exchange Web Services Access Policy' -Category 'Configuration' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected 'EWS access policy is configured.' `
+                -DataSource 'Get-OrganizationConfig' `
+                -Notes "AppAccessPolicy: $ewsAppListMode"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "EXO-CFG-005: EWS access policy check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'EXO-CFG-005' -Workload 'ExchangeOnline' -Component 'ClientAccess' `
+            -CheckName 'Exchange Web Services Access Policy' -Category 'Configuration' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-OrganizationConfig' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # EXO-SEC-006  -  Mailbox Delegation Audit
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "EXO-SEC-006: Checking mailbox full access delegation"
+
+        $mailboxesForDelegation = Get-Mailbox -ResultSize Unlimited -ErrorAction Stop |
+            Where-Object { $_.RecipientTypeDetails -eq 'UserMailbox' }
+
+        $delegatedMailboxes = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($mbx in $mailboxesForDelegation) {
+            try {
+                $perms = Get-MailboxPermission -Identity $mbx.PrimarySmtpAddress -ErrorAction SilentlyContinue |
+                    Where-Object {
+                        $_.AccessRights -contains 'FullAccess' -and
+                        -not $_.IsInherited -and
+                        $_.User -notmatch 'NT AUTHORITY\\' -and
+                        $_.User -notmatch 'S-1-5-' -and
+                        $_.User -ne 'SELF'
+                    }
+
+                if ($perms) {
+                    foreach ($perm in $perms) {
+                        $delegatedMailboxes.Add("$($mbx.PrimarySmtpAddress) -> $($perm.User)")
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if ($delegatedMailboxes.Count -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-006' -Workload 'ExchangeOnline' -Component 'MailboxPermissions' `
+                -CheckName 'Mailbox Full Access Delegation' -Category 'Security' -Severity 'Medium' `
+                -Status 'Warning' `
+                -IssueDetected "$($delegatedMailboxes.Count) mailbox(es) have explicit Full Access delegation to other accounts." `
+                -Explanation 'Full Access delegation allows a delegate to open and read all mail in a mailbox, send mail on behalf of, and perform all mailbox operations. While legitimate for shared mailboxes and executive assistants, excess delegation is a lateral movement vector - a compromised delegate account gains full access to all their delegated mailboxes.' `
+                -PossibleSolution 'Review all FullAccess delegations. Confirm each is still required and documented. Remove unused delegations. For executive support scenarios, prefer shared mailboxes over delegation. Log delegate access via mailbox audit (AuditDelegate: SendOnBehalf, SendAs, FullAccess).' `
+                -Impact 'A compromised delegate account gains full read/write access to all delegated mailboxes. Sensitive executive communications, legal correspondence, and HR mail may be exposed.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Data' `
+                -MitreAttack 'T1114.002' `
+                -DataSource 'Get-MailboxPermission' `
+                -Remediation 'Review: Get-Mailbox -ResultSize Unlimited | ForEach-Object { Get-MailboxPermission -Identity $_.PrimarySmtpAddress } | Where-Object {$_.AccessRights -contains "FullAccess" -and -not $_.IsInherited}. Remove: Remove-MailboxPermission -Identity <mbx> -User <user> -AccessRights FullAccess. Enable delegate audit: Set-Mailbox -AuditDelegate @{Add="SendOnBehalf","FullAccess","SendAs"}.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                -Notes "Delegated mailboxes (first 20): $(($delegatedMailboxes | Select-Object -First 20) -join ' | ')"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'EXO-SEC-006' -Workload 'ExchangeOnline' -Component 'MailboxPermissions' `
+                -CheckName 'Mailbox Full Access Delegation' -Category 'Security' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected "No unexpected Full Access delegations found across $($mailboxesForDelegation.Count) user mailbox(es)." `
+                -DataSource 'Get-MailboxPermission'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "EXO-SEC-006: Mailbox delegation check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'EXO-SEC-006' -Workload 'ExchangeOnline' -Component 'MailboxPermissions' `
+            -CheckName 'Mailbox Full Access Delegation' -Category 'Security' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-MailboxPermission' -Notes $_.Exception.Message))
+    }
+
+    Write-TtcLog -Level Info -Message "Exchange Online assessment complete  -  $($findings.Count) finding(s) generated"
     return $findings.ToArray()
 }

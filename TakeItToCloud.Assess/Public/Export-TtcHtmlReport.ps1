@@ -23,7 +23,7 @@ function Export-TtcHtmlReport {
     .PARAMETER AssessedBy
         Assessor name shown in the report metadata.
     .OUTPUTS
-        System.IO.FileInfo — the created HTML file.
+        System.IO.FileInfo  -  the created HTML file.
     .EXAMPLE
         Export-TtcHtmlReport -Findings $findings -CustomerName "Contoso" -AssessedBy "Carlos - TakeItToCloud"
     .EXAMPLE

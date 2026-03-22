@@ -16,7 +16,7 @@ function Get-TtcHtmlTemplate {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ReportTitle}} — TakeItToCloud Assessment</title>
+<title>{{ReportTitle}}  -  TakeItToCloud Assessment</title>
 <style>
 :root {
     --navy-900: #0f172a; --navy-800: #1e293b; --navy-700: #334155; --navy-600: #475569;

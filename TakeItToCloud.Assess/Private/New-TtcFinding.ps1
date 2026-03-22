@@ -38,6 +38,7 @@ function New-TtcFinding {
         [string]$Remediation         = '',
         [string]$AutoFixAvailable    = 'No',
         [string]$RemediationPriority = 'P3',
+        [string]$MitreAttack         = '',
         [string]$Notes               = '',
         [string]$Timestamp           = ''
     )
@@ -86,6 +87,7 @@ function New-TtcFinding {
         Remediation         = $Remediation
         AutoFixAvailable    = $AutoFixAvailable
         RemediationPriority = $RemediationPriority
+        MitreAttack         = $MitreAttack
         Notes               = $Notes
         Timestamp           = $Timestamp
     }

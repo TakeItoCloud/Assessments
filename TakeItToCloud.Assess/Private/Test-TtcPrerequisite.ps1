@@ -13,7 +13,7 @@ function Test-TtcPrerequisite {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateSet('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration')]
+        [ValidateSet('ActiveDirectory', 'ExchangeOnline', 'HybridIdentity', 'EntraID', 'Defender', 'Collaboration', 'MDE', 'PIM', 'ADCS')]
         [string]$Workload
     )
 
@@ -24,6 +24,9 @@ function Test-TtcPrerequisite {
         'EntraID'         = @('Microsoft.Graph.Authentication', 'Microsoft.Graph.Identity.DirectoryManagement', 'Microsoft.Graph.Identity.SignIns')
         'Defender'        = @('ExchangeOnlineManagement')
         'Collaboration'   = @('Microsoft.Graph.Authentication')
+        'MDE'             = @('Microsoft.Graph.Authentication')
+        'PIM'             = @('Microsoft.Graph.Authentication')
+        'ADCS'            = @('ActiveDirectory')
     }
 
     $required = $prerequisites[$Workload]

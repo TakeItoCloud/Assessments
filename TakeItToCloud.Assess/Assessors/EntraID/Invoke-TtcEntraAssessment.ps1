@@ -100,7 +100,7 @@ function Invoke-TtcEntraAssessment {
         return $findings.ToArray()
     }
 
-    # Cache organization data — used by multiple checks
+    # Cache organization data  -  used by multiple checks
     $org = $null
     try {
         $org = Get-MgOrganization -ErrorAction Stop | Select-Object -First 1
@@ -111,7 +111,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-SEC-001 — MFA Registration Coverage
+    # ENT-SEC-001  -  MFA Registration Coverage
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -226,7 +226,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-SEC-002 — Legacy Authentication Blocked via Conditional Access
+    # ENT-SEC-002  -  Legacy Authentication Blocked via Conditional Access
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -235,7 +235,7 @@ function Invoke-TtcEntraAssessment {
         $caPolicies = Get-MgIdentityConditionalAccessPolicy -All -ErrorAction Stop
 
         # A policy blocks legacy auth if it:
-        # - Targets All Users (or large groups) — AllUsers included
+        # - Targets All Users (or large groups)  -  AllUsers included
         # - Conditions: ClientAppTypes includes exchangeActiveSync or other (legacy protocols)
         # - Grant: Block
 
@@ -294,7 +294,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-SEC-003 — Global Administrator Count and Hygiene
+    # ENT-SEC-003  -  Global Administrator Count and Hygiene
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -315,7 +315,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-SEC-003' -Workload 'EntraID' -Component 'RoleAssignments' `
                 -CheckName 'Global Administrator Count' -Category 'Identity' -Severity 'Critical' `
                 -Status 'Fail' `
-                -IssueDetected "Only $gaCount Global Administrator(s) assigned — minimum 2 required for break-glass redundancy." `
+                -IssueDetected "Only $gaCount Global Administrator(s) assigned  -  minimum 2 required for break-glass redundancy." `
                 -Explanation 'A single Global Admin is a single point of failure. If the account is locked, the MFA device is lost, or the account is compromised and password-reset, no one can administer the tenant. Microsoft recommends 2-4 permanent Global Admins for break-glass purposes.' `
                 -PossibleSolution 'Assign at least 2 cloud-only, MFA-protected break-glass Global Admin accounts. Store credentials in a secure offline vault. Use PIM for all other admin access.' `
                 -Impact 'Tenant lock-out risk if the single GA is inaccessible. No recovery path without Microsoft Support intervention (which can take days).' `
@@ -347,7 +347,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-SEC-003' -Workload 'EntraID' -Component 'RoleAssignments' `
                 -CheckName 'Global Administrator Count' -Category 'Identity' -Severity 'High' `
                 -Status 'Pass' `
-                -IssueDetected "$gaCount Global Administrator(s) assigned — within recommended range (2 to $MaxGlobalAdmins)." `
+                -IssueDetected "$gaCount Global Administrator(s) assigned  -  within recommended range (2 to $MaxGlobalAdmins)." `
                 -DataSource 'Get-MgDirectoryRole;Get-MgDirectoryRoleMember' `
                 -Notes "GAs: $gaMemberNames"))
         }
@@ -362,7 +362,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-SEC-004 — Risky Users Not Remediated
+    # ENT-SEC-004  -  Risky Users Not Remediated
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -383,7 +383,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-SEC-004' -Workload 'EntraID' -Component 'IdentityProtection' `
                 -CheckName 'Risky Users Not Remediated' -Category 'Security' -Severity 'Critical' `
                 -Status 'Fail' `
-                -IssueDetected "$compromisedCount account(s) confirmed compromised in Entra Identity Protection — not yet remediated." `
+                -IssueDetected "$compromisedCount account(s) confirmed compromised in Entra Identity Protection  -  not yet remediated." `
                 -Explanation 'Accounts marked as "Confirmed Compromised" in Identity Protection have had their compromise acknowledged. Failure to remediate means an active attacker may still have access to these accounts and all resources they can reach.' `
                 -PossibleSolution 'Immediately: reset passwords, revoke all active sessions (Revoke-MgUserSignInSession), disable accounts pending investigation. Investigate sign-in and audit logs for lateral movement. Re-enable only after full forensic review.' `
                 -Impact 'Active attacker access to compromised accounts and all their authorized resources. Data exfiltration, privilege escalation, and lateral movement may be ongoing.' `
@@ -430,7 +430,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-CFG-001 — User Consent Policy (Application Consent)
+    # ENT-CFG-001  -  User Consent Policy (Application Consent)
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -466,7 +466,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-CFG-001' -Workload 'EntraID' -Component 'AppConsent' `
                 -CheckName 'User Application Consent Policy' -Category 'Governance' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'User consent is limited to verified publishers with low-risk permissions — review to confirm alignment with policy.' `
+                -IssueDetected 'User consent is limited to verified publishers with low-risk permissions  -  review to confirm alignment with policy.' `
                 -Explanation 'Limiting consent to verified publishers and low-risk permissions reduces OAuth phishing risk. However, "low-risk" is a relative Microsoft designation and may still permit access to user profile and email read operations.' `
                 -PossibleSolution 'Consider requiring admin approval for all consent requests (disable user consent entirely) if the organization handles sensitive data. Implement admin consent workflow so users can request approval.' `
                 -DataSource 'Get-MgPolicyAuthorizationPolicy' -FrameworkMapping 'ISO27001-A.9' -ZeroTrustPillar 'Applications' `
@@ -478,7 +478,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-CFG-001' -Workload 'EntraID' -Component 'AppConsent' `
                 -CheckName 'User Application Consent Policy' -Category 'Governance' -Severity 'Medium' `
                 -Status 'Pass' `
-                -IssueDetected 'User consent is disabled — admin approval is required for all application permissions.' `
+                -IssueDetected 'User consent is disabled  -  admin approval is required for all application permissions.' `
                 -DataSource 'Get-MgPolicyAuthorizationPolicy' `
                 -Notes "Consent policies assigned: $(($authPolicy.DefaultUserRolePermissions.PermissionGrantPoliciesAssigned -join ', '))"))
         }
@@ -493,7 +493,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-CFG-002 — External Collaboration Settings (Guest Invitations)
+    # ENT-CFG-002  -  External Collaboration Settings (Guest Invitations)
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -546,7 +546,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-SEC-005 — Conditional Access Baseline Coverage
+    # ENT-SEC-005  -  Conditional Access Baseline Coverage
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -570,14 +570,14 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-SEC-005' -Workload 'EntraID' -Component 'ConditionalAccess' `
                 -CheckName 'Conditional Access Baseline Coverage' -Category 'Security' -Severity 'Critical' `
                 -Status 'Fail' `
-                -IssueDetected 'No Conditional Access policies are enabled and Security Defaults is disabled — no baseline MFA enforcement.' `
+                -IssueDetected 'No Conditional Access policies are enabled and Security Defaults is disabled  -  no baseline MFA enforcement.' `
                 -Explanation 'Without CA policies or Security Defaults, there is no mechanism to enforce MFA, block risky sign-ins, or apply access controls. The tenant is relying entirely on password authentication, which is highly susceptible to phishing and credential attacks.' `
                 -PossibleSolution 'Immediately enable Security Defaults for basic MFA enforcement (if not using CA policies), or deploy a set of Conditional Access baseline policies: require MFA for all users, block legacy auth, require MFA for admin roles.' `
                 -Impact 'All users can authenticate with only a password. No protection against phishing, password spray, or credential stuffing exists at the authentication layer.' `
                 -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Identity' `
                 -SecureScoreMapping 'Enable Conditional Access policies' `
                 -DataSource 'Get-MgIdentityConditionalAccessPolicy;Get-MgPolicyIdentitySecurityDefaultsEnforcementPolicy' `
-                -Remediation 'Option 1: Enable Security Defaults: Update-MgPolicyIdentitySecurityDefaultsEnforcementPolicy -IsEnabled $true. Option 2: Deploy CA baseline — Require MFA for all users, Block legacy auth, Require MFA for admins, Block risky sign-ins. Use named locations and exclusion groups for break-glass accounts.' `
+                -Remediation 'Option 1: Enable Security Defaults: Update-MgPolicyIdentitySecurityDefaultsEnforcementPolicy -IsEnabled $true. Option 2: Deploy CA baseline  -  Require MFA for all users, Block legacy auth, Require MFA for admins, Block risky sign-ins. Use named locations and exclusion groups for break-glass accounts.' `
                 -AutoFixAvailable 'No' -RemediationPriority 'P1' `
                 -Notes "CA Policies: $(($caPolicies | Measure-Object).Count) total, $enabledCount enabled, $(($reportOnlyPolicies | Measure-Object).Count) report-only. Security Defaults: Disabled"))
         }
@@ -586,7 +586,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-SEC-005' -Workload 'EntraID' -Component 'ConditionalAccess' `
                 -CheckName 'Conditional Access Baseline Coverage' -Category 'Security' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'No Conditional Access policies enabled — Security Defaults provides basic protection but lacks granular control.' `
+                -IssueDetected 'No Conditional Access policies enabled  -  Security Defaults provides basic protection but lacks granular control.' `
                 -Explanation 'Security Defaults provide a basic MFA baseline but cannot accommodate exclusions, named locations, risk-based controls, or device compliance requirements. Organizations with more complex needs should migrate to Conditional Access policies.' `
                 -PossibleSolution 'Migrate to Conditional Access policies to gain control over exclusions (break-glass, service accounts), named locations, device compliance, and risk-based sign-in policies. Disable Security Defaults after CA policies are in place.' `
                 -Impact 'Security Defaults may enforce MFA in ways that block service accounts or legitimate automation. No risk-based or device compliance controls are available.' `
@@ -616,7 +616,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-CFG-003 — Self-Service Password Reset Configuration
+    # ENT-CFG-003  -  Self-Service Password Reset Configuration
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -665,7 +665,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-IDN-001 — Stale Guest User Accounts
+    # ENT-IDN-001  -  Stale Guest User Accounts
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -727,7 +727,7 @@ function Invoke-TtcEntraAssessment {
     }
 
     # =========================================================================
-    # ENT-MON-001 — Audit and Sign-in Log Accessibility
+    # ENT-MON-001  -  Audit and Sign-in Log Accessibility
     # =========================================================================
     try {
         $ErrorActionPreference = 'Stop'
@@ -749,7 +749,7 @@ function Invoke-TtcEntraAssessment {
                     -FindingId 'ENT-MON-001' -Workload 'EntraID' -Component 'AuditLogs' `
                     -CheckName 'Entra ID Audit and Sign-in Log Accessibility' -Category 'Monitoring' -Severity 'Medium' `
                     -Status 'Warning' `
-                    -IssueDetected "Most recent audit log entry is $auditAge hours old — verify log pipeline is functioning." `
+                    -IssueDetected "Most recent audit log entry is $auditAge hours old  -  verify log pipeline is functioning." `
                     -Explanation 'Entra ID audit logs are retained for 30 days (P1) or 90 days (P2). If logs appear stale, the log export pipeline (Log Analytics, Sentinel, or SIEM) may be broken. Real-time alerting depends on live log ingestion.' `
                     -PossibleSolution 'Verify Diagnostic Settings: Entra admin center > Monitoring > Diagnostic Settings. Confirm logs are flowing to Log Analytics or SIEM. Check for export quota issues or Service Principal permission changes.' `
                     -DataSource 'Get-MgAuditLogDirectoryAudit' -FrameworkMapping 'CIS-ContinuousMonitoring' -ZeroTrustPillar 'Infrastructure' `
@@ -771,7 +771,7 @@ function Invoke-TtcEntraAssessment {
                 -FindingId 'ENT-MON-001' -Workload 'EntraID' -Component 'AuditLogs' `
                 -CheckName 'Entra ID Audit and Sign-in Log Accessibility' -Category 'Monitoring' -Severity 'Medium' `
                 -Status 'Warning' `
-                -IssueDetected 'No audit log entries returned — logs may be empty or permissions insufficient.' `
+                -IssueDetected 'No audit log entries returned  -  logs may be empty or permissions insufficient.' `
                 -Explanation 'Entra audit logs should always contain recent events. If no entries are returned, the account running the assessment may lack AuditLog.Read.All permission, or logs may not be configured.' `
                 -PossibleSolution 'Ensure the assessment account has AuditLog.Read.All permission. Verify Diagnostic Settings in the Entra portal. A Purview license or P1 is required for audit log retention beyond 30 days.' `
                 -DataSource 'Get-MgAuditLogDirectoryAudit' -FrameworkMapping 'CIS-ContinuousMonitoring' -ZeroTrustPillar 'Infrastructure' `
@@ -787,6 +787,430 @@ function Invoke-TtcEntraAssessment {
             -DataSource 'Get-MgAuditLogDirectoryAudit' -Notes $_.Exception.Message))
     }
 
-    Write-TtcLog -Level Info -Message "Entra ID assessment complete — $($findings.Count) finding(s) generated"
+    # =========================================================================
+    # ENT-SEC-006  -  Workload Identity Credential Expiry
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-SEC-006: Checking workload identity credential expiry"
+
+        $apps = Invoke-TtcMgGraphRequest -Uri '/v1.0/applications?$select=id,displayName,passwordCredentials,keyCredentials&$top=999' -ErrorAction Stop
+        $appList = if ($apps.value) { $apps.value } else { @() }
+
+        $nowUtc    = [DateTime]::UtcNow
+        $warnDays  = 30
+        $expiredApps  = [System.Collections.Generic.List[string]]::new()
+        $expiringApps = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($app in $appList) {
+            $allCreds = @()
+            if ($app.passwordCredentials) { $allCreds += $app.passwordCredentials }
+            if ($app.keyCredentials)      { $allCreds += $app.keyCredentials }
+
+            foreach ($cred in $allCreds) {
+                $expiry = [DateTime]$cred.endDateTime
+                if ($expiry -lt $nowUtc) {
+                    $expiredApps.Add("$($app.displayName) [expired: $($expiry.ToString('yyyy-MM-dd'))]")
+                }
+                elseif ($expiry -lt $nowUtc.AddDays($warnDays)) {
+                    $expiringApps.Add("$($app.displayName) [expires: $($expiry.ToString('yyyy-MM-dd'))]")
+                }
+            }
+        }
+
+        if ($expiredApps.Count -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-006' -Workload 'EntraID' -Component 'AppRegistrations' `
+                -CheckName 'Workload Identity Credential Expiry' -Category 'Security' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "$($expiredApps.Count) application registration(s) have expired credentials. $($expiringApps.Count) expire within $warnDays days." `
+                -Explanation 'Expired app credentials cause authentication failures and may force emergency changes. Applications using expired credentials may fall back to weaker authentication or fail entirely. Rotation gaps create windows where old credentials remain valid if not revoked.' `
+                -PossibleSolution 'Rotate expired credentials immediately. Implement automated credential rotation using managed identities where possible. Configure alerts 60 days before expiry via Azure Monitor or Entra workload identity insights.' `
+                -Impact 'Service outages, broken integrations, and emergency credential rotation under pressure - increasing risk of misconfiguration.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Applications' `
+                -MitreAttack 'T1528' `
+                -DataSource 'Graph: /v1.0/applications' `
+                -Remediation 'For each expired app: Get-MgApplication -ApplicationId <id>; Remove-MgApplicationPassword; Add-MgApplicationPassword. Prefer managed identities (no credential management) for Azure workloads. Use federated identity credentials for GitHub Actions and other CI/CD.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes "Expired: $($expiredApps -join ' | ') -- Expiring soon: $($expiringApps -join ' | ')"))
+        }
+        elseif ($expiringApps.Count -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-006' -Workload 'EntraID' -Component 'AppRegistrations' `
+                -CheckName 'Workload Identity Credential Expiry' -Category 'Security' -Severity 'Medium' `
+                -Status 'Warning' `
+                -IssueDetected "$($expiringApps.Count) application credential(s) expire within $warnDays days." `
+                -PossibleSolution 'Rotate credentials before expiry. Consider migrating to managed identities to eliminate credential management overhead.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Applications' `
+                -MitreAttack 'T1528' `
+                -DataSource 'Graph: /v1.0/applications' -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                -Notes "Expiring soon: $($expiringApps -join ' | ')"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-006' -Workload 'EntraID' -Component 'AppRegistrations' `
+                -CheckName 'Workload Identity Credential Expiry' -Category 'Security' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected "No expired or near-expiry application credentials found across $($appList.Count) app registration(s)." `
+                -DataSource 'Graph: /v1.0/applications'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-SEC-006: App credential expiry check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-SEC-006' -Workload 'EntraID' -Component 'AppRegistrations' `
+            -CheckName 'Workload Identity Credential Expiry' -Category 'Security' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Graph: /v1.0/applications' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # ENT-SEC-007  -  Over-Privileged Enterprise Applications
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-SEC-007: Checking enterprise app permissions"
+
+        # Dangerous application (not delegated) permissions that allow broad data access
+        $dangerousPermissions = @(
+            'RoleManagement.ReadWrite.Directory',  # Can grant admin roles
+            'Directory.ReadWrite.All',             # Full directory write
+            'AppRoleAssignment.ReadWrite.All',     # Can assign any app role
+            'Group.ReadWrite.All',                 # All groups write
+            'Mail.ReadWrite',                      # Read/write all mailboxes
+            'Mail.Read',                           # Read all mailboxes (app permission)
+            'User.ReadWrite.All'                   # Full user management
+        )
+
+        $spns = Invoke-TtcMgGraphRequest -Uri '/v1.0/servicePrincipals?$select=id,displayName,appId&$top=999' -ErrorAction Stop
+        $spnList = if ($spns.value) { $spns.value } else { @() }
+
+        $riskySpns = [System.Collections.Generic.List[string]]::new()
+
+        foreach ($spn in $spnList) {
+            try {
+                $grants = Invoke-TtcMgGraphRequest -Uri "/v1.0/servicePrincipals/$($spn.id)/appRoleAssignments" -ErrorAction SilentlyContinue
+                $grantList = if ($grants.value) { $grants.value } else { @() }
+
+                foreach ($grant in $grantList) {
+                    # appRoleAssignment has roleId - we need to check resource service principal's appRoles
+                    # For Microsoft Graph (00000003-0000-0000-c000-000000000000), check permission value
+                    if ($grant.resourceDisplayName -eq 'Microsoft Graph') {
+                        $resourceSpn = Invoke-TtcMgGraphRequest -Uri "/v1.0/servicePrincipals/$($grant.resourceId)?`$select=appRoles" -ErrorAction SilentlyContinue
+                        if ($resourceSpn.appRoles) {
+                            $matchingRole = $resourceSpn.appRoles | Where-Object { $_.id -eq $grant.appRoleId }
+                            if ($matchingRole -and $matchingRole.value -in $dangerousPermissions) {
+                                $riskySpns.Add("$($spn.displayName): $($matchingRole.value)")
+                            }
+                        }
+                    }
+                }
+            }
+            catch { } # Skip individual SPNs that fail
+        }
+
+        if ($riskySpns.Count -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-007' -Workload 'EntraID' -Component 'AppPermissions' `
+                -CheckName 'Over-Privileged Enterprise Applications' -Category 'Security' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "$($riskySpns.Count) enterprise application(s) have high-privilege Microsoft Graph application permissions." `
+                -Explanation 'Application permissions (not delegated) allow background services to access tenant data without a signed-in user. High-privilege app permissions like Mail.Read or Directory.ReadWrite.All can be abused by a compromised service principal to exfiltrate all mailboxes or manipulate directory objects.' `
+                -PossibleSolution 'Review each application and verify the permission is genuinely required. Remove unused permissions. Prefer delegated permissions where a human sign-in is involved. Implement Conditional Access for workload identities (requires Entra ID P2).' `
+                -Impact 'A compromised service principal with Mail.Read.All can silently read every mailbox in the tenant. Directory.ReadWrite.All allows creating backdoor accounts.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Applications' `
+                -MitreAttack 'T1098.002' `
+                -DataSource 'Graph: /v1.0/servicePrincipals' `
+                -Remediation 'For each risky app: Entra admin center > Enterprise Applications > [App] > Permissions > Review. Remove: Remove-MgServicePrincipalAppRoleAssignment. Implement app permission review quarterly. Use Microsoft Entra Permissions Management for continuous monitoring.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes "Risky apps: $($riskySpns -join ' | ')"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-007' -Workload 'EntraID' -Component 'AppPermissions' `
+                -CheckName 'Over-Privileged Enterprise Applications' -Category 'Security' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected "No enterprise applications found with high-privilege Graph application permissions." `
+                -DataSource 'Graph: /v1.0/servicePrincipals' `
+                -Notes "Checked $($spnList.Count) service principal(s)"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-SEC-007: App permissions check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-SEC-007' -Workload 'EntraID' -Component 'AppPermissions' `
+            -CheckName 'Over-Privileged Enterprise Applications' -Category 'Security' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Graph: /v1.0/servicePrincipals' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # ENT-SEC-008  -  Privileged Identity Management (PIM) Adoption
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-SEC-008: Checking PIM adoption for privileged roles"
+
+        $eligibleSchedules = Invoke-TtcMgGraphRequest `
+            -Uri '/v1.0/roleManagement/directory/roleEligibilitySchedules?$select=id,principalId,roleDefinitionId' `
+            -ErrorAction SilentlyContinue
+
+        $eligibleCount = 0
+        if ($eligibleSchedules -and $eligibleSchedules.value) {
+            $eligibleCount = ($eligibleSchedules.value | Measure-Object).Count
+        }
+
+        # Also check active role assignments (standing access)
+        $activeAssignments = Invoke-TtcMgGraphRequest `
+            -Uri '/v1.0/roleManagement/directory/roleAssignments?$select=id,principalId,roleDefinitionId' `
+            -ErrorAction SilentlyContinue
+        $activeCount = 0
+        if ($activeAssignments -and $activeAssignments.value) {
+            $activeCount = ($activeAssignments.value | Measure-Object).Count
+        }
+
+        if ($eligibleCount -eq 0 -and $activeCount -gt 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-008' -Workload 'EntraID' -Component 'PIM' `
+                -CheckName 'Privileged Identity Management Adoption' -Category 'Identity' -Severity 'High' `
+                -Status 'Fail' `
+                -IssueDetected "No PIM eligible role assignments found. All $activeCount role assignment(s) are standing (always-on) privileged access." `
+                -Explanation 'Without PIM, all role assignments are permanent (standing access). Users with admin roles are high-value targets 24/7. PIM enforces just-in-time access with approval workflows, MFA step-up, and time-limited activation - dramatically reducing the attack surface for privileged accounts.' `
+                -PossibleSolution 'Enable Entra ID PIM (requires P2 license). Convert standing role assignments to PIM eligible assignments. Configure activation policies: require MFA, justification, and optionally approval. Start with Global Administrator and Privileged Role Administrator roles.' `
+                -Impact 'Admin accounts with permanent standing access are prime targets. A compromised admin account immediately provides full privileges with no time limit.' `
+                -FrameworkMapping 'CIS-AccessControl' -ZeroTrustPillar 'Identity' `
+                -SecureScoreMapping 'Use limited and just-in-time admin roles' `
+                -MitreAttack 'T1078.004' `
+                -DataSource 'Graph: /v1.0/roleManagement/directory/roleEligibilitySchedules' `
+                -Remediation 'Enable PIM: Entra admin center > Identity Governance > Privileged Identity Management. For each admin role: PIM > Azure AD Roles > Roles > [Role] > Assignments > Add Assignments > Assignment type: Eligible. Set activation duration (e.g., 4 hours). Require MFA and justification at activation.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes "Standing assignments: $activeCount | PIM eligible assignments: 0"))
+        }
+        elseif ($eligibleCount -gt 0) {
+            $pimRatio = if (($eligibleCount + $activeCount) -gt 0) {
+                [int](($eligibleCount / ($eligibleCount + $activeCount)) * 100)
+            } else { 0 }
+
+            $status = if ($pimRatio -ge 70) { 'Pass' } else { 'Warning' }
+            $severity = if ($pimRatio -lt 50) { 'Medium' } else { 'Low' }
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-008' -Workload 'EntraID' -Component 'PIM' `
+                -CheckName 'Privileged Identity Management Adoption' -Category 'Identity' -Severity $severity `
+                -Status $status `
+                -IssueDetected "PIM is in use: $eligibleCount eligible vs $activeCount standing role assignment(s) ($pimRatio% PIM-managed)." `
+                -DataSource 'Graph: /v1.0/roleManagement/directory/roleEligibilitySchedules' `
+                -Notes "Eligible (PIM): $eligibleCount | Standing (permanent): $activeCount | PIM adoption: $pimRatio%"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-008' -Workload 'EntraID' -Component 'PIM' `
+                -CheckName 'Privileged Identity Management Adoption' -Category 'Identity' -Severity 'Medium' `
+                -Status 'Warning' `
+                -IssueDetected 'PIM eligibility data could not be retrieved - P2 license or RoleManagement.Read.All permission may be required.' `
+                -DataSource 'Graph: /v1.0/roleManagement/directory/roleEligibilitySchedules' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P3'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-SEC-008: PIM check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-SEC-008' -Workload 'EntraID' -Component 'PIM' `
+            -CheckName 'Privileged Identity Management Adoption' -Category 'Identity' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete (requires Entra ID P2 + RoleManagement.Read.All): $($_.Exception.Message)" `
+            -DataSource 'Graph: /v1.0/roleManagement/directory/roleEligibilitySchedules' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # ENT-SEC-009  -  FIDO2 / Passwordless Authentication Enablement
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-SEC-009: Checking FIDO2/passwordless authentication method policy"
+
+        $authMethodsPolicy = Invoke-TtcMgGraphRequest `
+            -Uri '/v1.0/policies/authenticationMethodsPolicy' -ErrorAction Stop
+
+        $fido2Policy = $null
+        $msAuthenticatorPolicy = $null
+        if ($authMethodsPolicy.authenticationMethodConfigurations) {
+            $fido2Policy = $authMethodsPolicy.authenticationMethodConfigurations |
+                Where-Object { $_.id -eq 'Fido2' }
+            $msAuthenticatorPolicy = $authMethodsPolicy.authenticationMethodConfigurations |
+                Where-Object { $_.id -eq 'MicrosoftAuthenticator' }
+        }
+
+        $fido2Enabled      = $fido2Policy -and $fido2Policy.state -eq 'enabled'
+        $authenticatorEnabled = $msAuthenticatorPolicy -and $msAuthenticatorPolicy.state -eq 'enabled'
+
+        $passwordlessEnabled = $fido2Enabled -or $authenticatorEnabled
+
+        if (-not $passwordlessEnabled) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-009' -Workload 'EntraID' -Component 'AuthenticationMethods' `
+                -CheckName 'FIDO2/Passwordless Authentication Enablement' -Category 'Security' -Severity 'Medium' `
+                -Status 'Fail' `
+                -IssueDetected 'Neither FIDO2 security keys nor Microsoft Authenticator passwordless phone sign-in are enabled.' `
+                -Explanation 'Passwordless authentication eliminates the password as an attack vector entirely. FIDO2 security keys are phishing-resistant - even a perfect phishing site cannot capture a FIDO2 credential. Password-based MFA still exposes users to real-time phishing (AiTM attacks) that proxy MFA codes.' `
+                -PossibleSolution 'Enable FIDO2 authentication: Entra admin center > Protection > Authentication Methods > FIDO2 Security Key > Enable. Enable Microsoft Authenticator passwordless: Authentication Methods > Microsoft Authenticator > Enable and configure. Create a pilot group and gradually expand adoption.' `
+                -Impact 'Password-based authentication (even with MFA) is vulnerable to adversary-in-the-middle phishing kits (Evilginx, Modlishka) that relay credentials and session tokens in real-time. FIDO2 is immune to this attack class.' `
+                -FrameworkMapping 'NIST-Protect' -ZeroTrustPillar 'Identity' `
+                -SecureScoreMapping 'Enable passwordless authentication methods' `
+                -DataSource 'Graph: /v1.0/policies/authenticationMethodsPolicy' `
+                -Remediation 'FIDO2: Update-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration -AuthenticationMethodConfigurationId Fido2 -State enabled. Authenticator passwordless: Update-MgPolicyAuthenticationMethodPolicyAuthenticationMethodConfiguration -AuthenticationMethodConfigurationId MicrosoftAuthenticator -State enabled. Deploy to admins first as highest-value targets.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                -Notes "FIDO2: $($fido2Policy.state) | Microsoft Authenticator: $($msAuthenticatorPolicy.state)"))
+        }
+        else {
+            $enabledMethods = @()
+            if ($fido2Enabled)        { $enabledMethods += 'FIDO2' }
+            if ($authenticatorEnabled) { $enabledMethods += 'Microsoft Authenticator Passwordless' }
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-009' -Workload 'EntraID' -Component 'AuthenticationMethods' `
+                -CheckName 'FIDO2/Passwordless Authentication Enablement' -Category 'Security' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected "Passwordless authentication method(s) enabled: $($enabledMethods -join ', ')." `
+                -DataSource 'Graph: /v1.0/policies/authenticationMethodsPolicy'))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-SEC-009: FIDO2/passwordless check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-SEC-009' -Workload 'EntraID' -Component 'AuthenticationMethods' `
+            -CheckName 'FIDO2/Passwordless Authentication Enablement' -Category 'Security' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Graph: /v1.0/policies/authenticationMethodsPolicy' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # ENT-CFG-004  -  Cross-Tenant Access Settings
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-CFG-004: Checking cross-tenant access settings"
+
+        $crossTenantDefault = Invoke-TtcMgGraphRequest `
+            -Uri '/v1.0/policies/crossTenantAccessPolicy/default' -ErrorAction Stop
+
+        $inboundAllowAll  = $crossTenantDefault.inboundTrust -and
+                            $crossTenantDefault.b2bCollaborationInbound.usersAndGroups.accessType -eq 'allowed' -and
+                            $crossTenantDefault.b2bCollaborationInbound.usersAndGroups.targets.type -eq 'all'
+
+        $outboundAllowAll = $crossTenantDefault.b2bCollaborationOutbound.usersAndGroups.accessType -eq 'allowed' -and
+                            $crossTenantDefault.b2bCollaborationOutbound.usersAndGroups.targets.type -eq 'all'
+
+        $partners = Invoke-TtcMgGraphRequest `
+            -Uri '/v1.0/policies/crossTenantAccessPolicy/partners' -ErrorAction SilentlyContinue
+        $partnerCount = if ($partners -and $partners.value) { ($partners.value | Measure-Object).Count } else { 0 }
+
+        if ($inboundAllowAll) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-CFG-004' -Workload 'EntraID' -Component 'CrossTenantAccess' `
+                -CheckName 'Cross-Tenant Access Settings' -Category 'Governance' -Severity 'Medium' `
+                -Status 'Warning' `
+                -IssueDetected 'Cross-tenant access default policy allows inbound collaboration from all external tenants without restriction.' `
+                -Explanation 'Unrestricted inbound B2B collaboration allows guest users from any Microsoft 365 tenant to be invited and access resources. Organizations should explicitly allowlist trusted tenants and block all others to prevent data exfiltration paths.' `
+                -PossibleSolution 'Configure cross-tenant access policies to block inbound collaboration by default. Add explicit allow entries for trusted partner tenants. Entra admin center: External Identities > Cross-tenant access settings > Default settings.' `
+                -Impact 'External users from any tenant can be invited as guests, potentially providing unauthorized access to internal resources if invitation controls are lax.' `
+                -FrameworkMapping 'ISO27001-A.15' -ZeroTrustPillar 'Data' `
+                -DataSource 'Graph: /v1.0/policies/crossTenantAccessPolicy/default' `
+                -Remediation 'Set default inbound to block: In Entra admin center > External Identities > Cross-tenant access settings > Default settings > B2B collaboration Inbound: Block. Add partner entries for trusted tenants. Configure tenant restrictions to prevent users from signing into external tenants on corporate devices.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P3' `
+                -Notes "Partner-specific policies: $partnerCount | Inbound default: Allow All | Outbound default: $(if ($outboundAllowAll) { 'Allow All' } else { 'Restricted' })"))
+        }
+        else {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-CFG-004' -Workload 'EntraID' -Component 'CrossTenantAccess' `
+                -CheckName 'Cross-Tenant Access Settings' -Category 'Governance' -Severity 'Medium' `
+                -Status 'Pass' `
+                -IssueDetected 'Cross-tenant access default policy is configured with restrictions on inbound collaboration.' `
+                -DataSource 'Graph: /v1.0/policies/crossTenantAccessPolicy/default' `
+                -Notes "Partner-specific policies: $partnerCount | Outbound: $(if ($outboundAllowAll) { 'Allow All' } else { 'Restricted' })"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-CFG-004: Cross-tenant access check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-CFG-004' -Workload 'EntraID' -Component 'CrossTenantAccess' `
+            -CheckName 'Cross-Tenant Access Settings' -Category 'Governance' -Severity 'Medium' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Graph: /v1.0/policies/crossTenantAccessPolicy/default' -Notes $_.Exception.Message))
+    }
+
+    # =========================================================================
+    # ENT-SEC-010  -  Emergency Access (Break-Glass) Account Validation
+    # =========================================================================
+    try {
+        $ErrorActionPreference = 'Stop'
+        Write-TtcLog -Level Info -Message "ENT-SEC-010: Checking emergency access (break-glass) account hygiene"
+
+        # Heuristic: find cloud-only GA accounts that appear to be break-glass
+        # Indicators: no MFA registered via normal methods, no last sign-in, name contains 'break', 'emergency', 'bg', 'glass'
+        $gaRole = Get-MgDirectoryRole -Filter "displayName eq 'Global Administrator'" -ErrorAction Stop
+        $gaMembers = @()
+        if ($gaRole) {
+            $gaMembers = Get-MgDirectoryRoleMember -DirectoryRoleId $gaRole.Id -All -ErrorAction Stop
+        }
+
+        $breakGlassPatterns = @('*break*', '*glass*', '*emergency*', '*emerg*', '*bg-*', '*-bg*', '*bg_*', '*_bg*')
+        $breakGlassAccounts = $gaMembers | Where-Object {
+            $upn = $_.AdditionalProperties['userPrincipalName']
+            $displayName = $_.AdditionalProperties['displayName']
+            $breakGlassPatterns | Where-Object { $upn -like $_ -or $displayName -like $_ }
+        }
+
+        $breakGlassCount = ($breakGlassAccounts | Measure-Object).Count
+
+        # Also check for GAs with no onPremisesSyncEnabled (cloud-only = good for BG accounts)
+        $cloudOnlyGAs = [System.Collections.Generic.List[string]]::new()
+        foreach ($ga in $gaMembers) {
+            $userId = $ga.Id
+            try {
+                $userDetail = Get-MgUser -UserId $userId `
+                    -Property DisplayName, UserPrincipalName, OnPremisesSyncEnabled, SignInActivity `
+                    -ErrorAction SilentlyContinue
+                if ($userDetail -and -not $userDetail.OnPremisesSyncEnabled) {
+                    $cloudOnlyGAs.Add($userDetail.UserPrincipalName)
+                }
+            }
+            catch { }
+        }
+
+        if ($breakGlassCount -eq 0) {
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-010' -Workload 'EntraID' -Component 'BreakGlass' `
+                -CheckName 'Emergency Access Account Validation' -Category 'Resilience' -Severity 'High' `
+                -Status 'Warning' `
+                -IssueDetected 'No Global Administrator accounts matching break-glass naming conventions were identified.' `
+                -Explanation 'Break-glass (emergency access) accounts are cloud-only GA accounts held offline for use when normal admin access fails (MFA device lost, federated identity provider outage, CA policy misconfiguration lockout). Without dedicated break-glass accounts, an admin lockout may require days of Microsoft Support intervention.' `
+                -PossibleSolution 'Create 2 cloud-only Global Administrator accounts with names indicating emergency use (e.g., breakglass1@domain.com). Use a FIDO2 key or very long random password stored in a physical safe. Exclude from all CA policies. Set up alert rules to notify on any sign-in.' `
+                -Impact 'Without break-glass accounts, a CA policy misconfiguration, MFA device failure, or federated IdP outage can lock all admins out of the tenant permanently.' `
+                -FrameworkMapping 'NIST-Recover' -ZeroTrustPillar 'Identity' `
+                -SecureScoreMapping 'Designate more than one global admin' `
+                -DataSource 'Get-MgDirectoryRole;Get-MgDirectoryRoleMember' `
+                -Remediation 'Create 2 accounts: New-MgUser with cloud-only UPN (e.g., bg1@tenant.onmicrosoft.com). Assign GA role. Store credentials in physical safe or HSM. Configure Log Analytics alert: any sign-in from these accounts triggers immediate notification. Test access semi-annually.' `
+                -AutoFixAvailable 'No' -RemediationPriority 'P2' `
+                -Notes "Cloud-only GAs detected (potential BG candidates): $($cloudOnlyGAs -join ', ')"))
+        }
+        else {
+            $bgNames = ($breakGlassAccounts | ForEach-Object { $_.AdditionalProperties['userPrincipalName'] }) -join ', '
+            $findings.Add((New-TtcFinding `
+                -FindingId 'ENT-SEC-010' -Workload 'EntraID' -Component 'BreakGlass' `
+                -CheckName 'Emergency Access Account Validation' -Category 'Resilience' -Severity 'High' `
+                -Status 'Pass' `
+                -IssueDetected "$breakGlassCount break-glass Global Administrator account(s) identified by naming convention." `
+                -DataSource 'Get-MgDirectoryRole;Get-MgDirectoryRoleMember' `
+                -Notes "Break-glass accounts: $bgNames | Cloud-only GAs: $($cloudOnlyGAs -join ', ')"))
+        }
+    }
+    catch {
+        Write-TtcLog -Level Error -Message "ENT-SEC-010: Break-glass check failed" -ErrorRecord $_
+        $findings.Add((New-TtcFinding `
+            -FindingId 'ENT-SEC-010' -Workload 'EntraID' -Component 'BreakGlass' `
+            -CheckName 'Emergency Access Account Validation' -Category 'Resilience' -Severity 'High' `
+            -Status 'Error' -IssueDetected "Check could not complete: $($_.Exception.Message)" `
+            -DataSource 'Get-MgDirectoryRole;Get-MgDirectoryRoleMember' -Notes $_.Exception.Message))
+    }
+
+    Write-TtcLog -Level Info -Message "Entra ID assessment complete  -  $($findings.Count) finding(s) generated"
     return $findings.ToArray()
 }

@@ -7,7 +7,7 @@ function Invoke-TtcAutoFix {
         individual assessor) and generates a documented, ready-to-review PowerShell remediation
         script file for all findings where AutoFixAvailable is 'Yes' or 'Partial'.
 
-        IMPORTANT: This function GENERATES a remediation script — it does NOT execute any fixes.
+        IMPORTANT: This function GENERATES a remediation script  -  it does NOT execute any fixes.
         The generated script must be reviewed and executed separately by a qualified administrator.
         All remediation commands are wrapped in a confirmation prompt framework.
 
@@ -37,7 +37,7 @@ function Invoke-TtcAutoFix {
         $result = Invoke-TtcAssessment -CustomerName "Contoso"
         Invoke-TtcAutoFix -Findings $result.Findings -OutputPath "C:\Remediation\Contoso_Fix.ps1"
     .EXAMPLE
-        # Pipeline usage — generate script for AD findings only
+        # Pipeline usage  -  generate script for AD findings only
         Invoke-TtcAdAssessment | Invoke-TtcAutoFix -SeverityFilter Critical
     .EXAMPLE
         # Generate script for all severities including partial fixes
@@ -176,14 +176,16 @@ function Invoke-TtcAutoFix {
                     [void]$sb.AppendLine('#' + ('-' * 79))
 
                     if ($finding.AutoFixAvailable -eq 'Partial') {
-                        [void]$sb.AppendLine('# NOTE: AutoFixAvailable = Partial — manual steps may be required after running this block.')
+                        [void]$sb.AppendLine('# NOTE: AutoFixAvailable = Partial  -  manual steps may be required after running this block.')
                         [void]$sb.AppendLine("# Possible Solution: $($finding.PossibleSolution)")
                     }
 
                     [void]$sb.AppendLine('')
 
                     # Emit the remediation block with confirmation guard
-                    [void]$sb.AppendLine("if (`$Force -or `$PSCmdlet.ShouldProcess('$($finding.FindingId)', '$($finding.CheckName -replace "'","''")')) {")
+                    $safeId   = $finding.FindingId
+                    $safeName = $finding.CheckName -replace "'", "''"
+                    [void]$sb.AppendLine("if (`$Force -or `$PSCmdlet.ShouldProcess('$safeId', '$safeName')) {")
                     [void]$sb.AppendLine('    try {')
 
                     # Emit remediation steps as commented lines with the actual command
@@ -210,7 +212,9 @@ function Invoke-TtcAutoFix {
                         [void]$sb.AppendLine("        # $($finding.PossibleSolution)")
                     }
 
-                    [void]$sb.AppendLine('        Write-Host "[FIXED] $($finding.FindingId): $($finding.CheckName -replace "'","''")" -ForegroundColor Green')
+                    $safeId   = $finding.FindingId
+                    $safeName = $finding.CheckName -replace "'", "''"
+                    [void]$sb.AppendLine("        Write-Host '[FIXED] $safeId`: $safeName' -ForegroundColor Green")
                     [void]$sb.AppendLine('    }')
                     [void]$sb.AppendLine('    catch {')
                     [void]$sb.AppendLine("        Write-Warning `"[FAILED] $($finding.FindingId): `$(`$_.Exception.Message)`"")
@@ -264,7 +268,7 @@ function Invoke-TtcAutoFix {
         }
         catch {
             Write-TtcLog -Level Error -Message "Failed to write remediation script to $OutputPath" -ErrorRecord $_
-            Write-Error "Invoke-TtcAutoFix: Failed to write script — $($_.Exception.Message)"
+            Write-Error "Invoke-TtcAutoFix: Failed to write script  -  $($_.Exception.Message)"
         }
     }
 }
